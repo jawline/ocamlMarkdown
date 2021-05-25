@@ -4,19 +4,23 @@ open Fragment
 
 (* TODO: Escaping *)
 
-(* Bold text is started and ended by '**' *)
-let bold_predicate xs =
-  match xs with
-  | '*' :: '*' :: after_end -> Some after_end
-  | _ -> None
+let repeated_character (expected: char) (count: int) =
+  let rec verify xs i =
+    if i = count then Some xs else
+    match xs with
+    | (x::xs) when Char.(=) x expected -> verify xs (i + 1)
+    | _ -> None
+  in
+  function xs -> verify xs 0
 ;;
 
+(* Bold text is started and ended by '**' *)
+let bold_predicate = repeated_character '*' 2;;
+let bold_predicate_underscore = repeated_character '-' 2;;
+
 (* Italtics are started and ended by a *. Italics should be checked only after bold since the _great_ language of markdown overloads the symbol *)
-let italic_predicate xs =
-  match xs with
-  | '*' :: after_end -> Some after_end
-  | _ -> None
-;;
+let italic_predicate = repeated_character '*' 1;;
+let italic_predicate_underscore = repeated_character '_' 1;;
 
 (* If we are at a paragraph ending sequence or any of the bold / italic / code predicates are satisfied then the text parsing is terminated and the next fragment (potentially code, bold, new paragraph) is parsed *)
 let terminates_text xs =
@@ -25,6 +29,7 @@ let terminates_text xs =
 
 (* this reads characters from the stream until a sequence that terminates a contiguous text block is reached *)
 let parse_text xs =
+
   let rec parse_text_inner xs =
     match xs with
     | [] -> [], xs
@@ -33,8 +38,15 @@ let parse_text xs =
       let rest, follows = parse_text_inner xs in
       x :: rest, follows
   in
-  let parsed_text, follows = parse_text_inner xs in
-  Some (Text (String.of_char_list parsed_text), follows)
+
+  (*
+    We force forward progress in the parser by always taking at least one character if we fall through to parse_text
+    Otherwise we might get stuck trying to parse an unclosed bold, italic, code block etc *)
+  match xs with
+  | [] -> None
+  | (x::xs) ->
+    let parsed_text, follows = parse_text_inner xs in
+    Some (Text (String.of_char_list (x::parsed_text)), follows)
 ;;
 
 let rec parse_paragraph_contents ends_predicate fragment_parser xs =
@@ -74,30 +86,27 @@ let paragraph_format_parser
        | None -> None)
 ;;
 
-let rec parse_paragraph_fragment xs =
+let parse_formatted_section predicate recurser wrap =
   let parse_bold_inner xs =
     parse_paragraph_contents
       (function
-        | test_input -> is_some (bold_predicate test_input) || ends_paragraph test_input)
-      parse_paragraph_fragment
+        | test_input -> is_some (predicate test_input) || ends_paragraph test_input)
+      recurser
       xs
   in
-  let parse_bold =
-    paragraph_format_parser bold_predicate bold_predicate parse_bold_inner (function
-        | xs -> Bold (Fragments xs))
+  paragraph_format_parser predicate predicate parse_bold_inner wrap
+;;
+
+let rec parse_paragraph_fragment xs =
+  let bold_wrap = (function| xs -> Bold (Fragments xs))
   in
-  let parse_italic_inner xs =
-    parse_paragraph_contents
-      (function
-        | test_input -> is_some (italic_predicate test_input) || ends_paragraph test_input)
-      parse_paragraph_fragment
-      xs
+  let assembled_bold_parser = bind_parser (parse_formatted_section bold_predicate parse_paragraph_fragment bold_wrap) (parse_formatted_section bold_predicate_underscore parse_paragraph_fragment bold_wrap)
   in
-  let parse_italic =
-    paragraph_format_parser italic_predicate italic_predicate parse_italic_inner (function
-        | xs -> Italic (Fragments xs))
+  let italic_wrap = (function | xs -> Italic (Fragments xs))
   in
-  let special_text_parser = bind_parser parse_bold parse_italic in
+  let assembled_italic_parser = bind_parser (parse_formatted_section italic_predicate parse_paragraph_fragment italic_wrap) (parse_formatted_section italic_predicate_underscore parse_paragraph_fragment italic_wrap)
+  in
+  let special_text_parser = bind_parser assembled_bold_parser assembled_italic_parser in
   let combined_parser = bind_parser special_text_parser parse_text in
   combined_parser xs
 ;;
