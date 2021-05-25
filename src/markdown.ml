@@ -25,7 +25,6 @@ let rec parse_fragments xs =
 ;;
 
 let parse (json : string) : t = Fragments (parse_fragments (String.to_list json))
-
 let test_with_header = "\n# Hello World\nThis is a paragraph"
 let test_with_italic = "*Italic Test*"
 let test_with_bold = "**Bold Test**"
@@ -93,7 +92,8 @@ let%test "unclosed_bold" =
   let bold_block = parse unclosed_bold in
   match bold_block with
   (* TODO: This test fragments the Text up into two sections but we could actually merge any contiguous Text(...) blocks together, this is just an artifact of the way we force forward progress in the parser. *)
-  | Fragments [ Paragraph [ Text x; Text y ] ] when String.(=) x "Hel" && String.(=) y "*lo" -> true
+  | Fragments [ Paragraph [ Text x; Text y ] ]
+    when String.( = ) x "Hel" && String.( = ) y "*lo" -> true
   | _ -> false
 ;;
 
