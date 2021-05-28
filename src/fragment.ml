@@ -3,6 +3,7 @@ type t =
   | Paragraph of t list
   | Code of string
   | Text of string
+  | List of t list
   | Bold of t
   | Italic of t
   | Heading of (int * string)

@@ -7,7 +7,9 @@ let skip = Util.skip
 
 type t = Fragment.t
 
-let parse_fragment = Util.bind_parser Header.parse_header Paragraph.parse
+let parse_fragment =
+  bind_parsers [ Header.parse_header; List_parser.parse; Paragraph.parse ]
+;;
 
 let rec parse_fragments xs =
   match skip xs with

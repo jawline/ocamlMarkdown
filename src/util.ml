@@ -1,3 +1,5 @@
+open Core
+
 (*
  * We construct the fragment parser by glueing together separate parsers that may either consume
  * a portion of the string and return a fragment + the rest of the source, or return None indicating that
@@ -33,6 +35,15 @@ let bind_parser (f_a : parse_method) (f_b : parse_method) = function
     (match f_a xs with
      | Some x -> Some x
      | None -> f_b xs)
+;;
+
+(* Calls bind parser on a list of parsers, with precedence being given to the first item in the list *)
+let rec bind_parsers xs =
+  match xs with
+  | [ x ] -> x
+  | x :: xs -> bind_parser x (bind_parsers xs)
+  (* The case below should only happen if initially invoked incorrectly *)
+  | _ -> raise_s (sexp_of_string "bind_parser cannot be called with an empty list")
 ;;
 
 (* Parse a list of characters until a stopping predicate is satisfied, forms the foundation of parse_text and parse_code *)
