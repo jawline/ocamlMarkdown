@@ -102,10 +102,17 @@ let%test "two_paragraphs_bold" =
   | _ -> false
 ;;
 
-let%test "test_header" =
+let%test "header" =
   let parsed_header = parse test_with_header in
   match parsed_header with
   | Fragments [ Heading (depth, x); Paragraph [Text y] ] when depth = 1 && String.(=) x "Hello World" && String.(=) y "This is a paragraph" -> true
+  | _ -> false
+;;
+
+let%test "deeper_header" =
+  let parsed_header = parse test_with_deeper_header in
+  match parsed_header with
+  | Fragments [ Heading (depth, x); Paragraph [Text y] ] when depth = 3 && String.(=) x "Hello World" && String.(=) y "This is a paragraph" -> true
   | _ -> false
 ;;
 
