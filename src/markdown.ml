@@ -109,6 +109,14 @@ let%test "header" =
   | _ -> false
 ;;
 
+let%test "simple_code" =
+  let parsed_code = parse "``Hello``" in
+  printf "%s\n" (show parsed_code);
+  match parsed_code with
+  | Fragments [ Paragraph [Code y] ] when String.(=) y "Hello" -> true
+  | _ -> false
+;;
+
 let%test "deeper_header" =
   let parsed_header = parse test_with_deeper_header in
   match parsed_header with

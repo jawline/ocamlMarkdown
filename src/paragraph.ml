@@ -26,20 +26,28 @@ let bold_predicate_underscore = repeated_character '-' 2
 let italic_predicate = repeated_character '*' 1
 let italic_predicate_underscore = repeated_character '_' 1
 
+(* Code is started by `Hello` ``Helllo`` or ```Hello``` *)
+let code_predicate = repeated_character '`' 1
+let code_predicate_double = repeated_character '`' 2
+let code_predicate_triple = repeated_character '`' 3
+
 (* If we are at a paragraph ending sequence or any of the bold / italic / code predicates are satisfied then the text parsing is terminated and the next fragment (potentially code, bold, new paragraph) is parsed *)
 let terminates_text xs =
   ends_paragraph xs || is_some (bold_predicate xs) || is_some (italic_predicate xs)
 ;;
 
+(* Parse a list of characters until a stopping predicate is satisfied, forms the foundation of parse_text and parse_code *)
+let rec parse_text_method stop_predicate xs = match xs with
+    | [] -> [], xs
+    | xs when stop_predicate xs -> [], xs
+    | x :: xs ->
+      let rest, follows = parse_text_method stop_predicate xs in
+      x :: rest, follows
+;;
+
 (* this reads characters from the stream until a sequence that terminates a contiguous text block is reached *)
 let parse_text xs =
-  let rec parse_text_inner xs =
-    match xs with
-    | [] -> [], xs
-    | xs when terminates_text xs -> [], xs
-    | x :: xs ->
-      let rest, follows = parse_text_inner xs in
-      x :: rest, follows
+  let parse_text_inner = parse_text_method terminates_text
   in
   (*
     We force forward progress in the parser by always taking at least one character if we fall through to parse_text
@@ -50,6 +58,22 @@ let parse_text xs =
     let parsed_text, follows = parse_text_inner xs in
     Some (Text (String.of_char_list (x :: parsed_text)), follows)
 ;;
+
+(* this reads out a series of characters between ` `` and ``` opening blocks as code segments *)
+let parse_code_core predicate xs =
+  let parse_code_inner = parse_text_method (fun xs -> is_some (predicate xs)) in
+  match predicate xs with
+  | Some xs -> (
+    let (code, rest) = parse_code_inner xs in
+    match predicate rest with
+    | Some after_code -> Some (Code (String.of_char_list code), after_code)
+    | None -> None
+  )
+  | None -> None
+;;
+
+(* Generate a parsing method for each of the three code start predicates. They are added in reverse order so the longer options take precedence, otherwise ```Hello``` would evaluate to `` `Hello` ``*)
+let code_parser = bind_parser (bind_parser (parse_code_core code_predicate_triple) (parse_code_core code_predicate_double)) (parse_code_core code_predicate);;
 
 let rec parse_paragraph_contents ends_predicate fragment_parser xs =
   let recurse new_thing follows =
@@ -131,6 +155,7 @@ let rec parse_paragraph_fragment xs =
 
   (* We combine the bold and italics parsers with bold taking precedence *)
   let special_text_parser = bind_parser assembled_bold_parser assembled_italic_parser in
+  let special_text_parser = bind_parser special_text_parser code_parser in
 
   (* Finally this is combined with the fallback text parser that forces forward progress (if no rule can be satisfied, we assume it is just normal text and consume at least one character as text *)
   let combined_parser = bind_parser special_text_parser parse_text in

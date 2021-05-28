@@ -1,6 +1,7 @@
 type t =
   | Fragments of t list
   | Paragraph of t list
+  | Code of string
   | Text of string
   | Bold of t
   | Italic of t
