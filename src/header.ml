@@ -1,5 +1,6 @@
 open Core
 open Fragment
+open Util
 
 let skip = Util.skip
 
@@ -19,7 +20,7 @@ let rec parse_header_title_text xs =
     x :: rest, follows
 ;;
 
-let parse_header xs =
+let parse_header_starting_with_hash xs =
   match xs with
   | '#' :: _ ->
     let depth, rest = parse_header_count_depth xs in
@@ -27,3 +28,28 @@ let parse_header xs =
     Some (Heading (depth, String.of_char_list text_list), follows)
   | _ -> None
 ;;
+
+let rec read_entire_line xs = match xs with
+  | [] -> ([], [])
+  | ('\n'::xs) -> ([], xs)
+  | (x::xs) -> let rest, follows = read_entire_line xs in (x::rest, follows)
+;;
+
+let rec is_header_line count chr xs = match xs with
+  | [] -> Some (count, [])
+  | ('\n'::xs) -> Some (count, xs)
+  | (x::xs) when Char.(=) x chr -> is_header_line (count + 1) chr xs
+  | _ -> None
+;;
+
+let parse_header_two_lines chr depth xs =
+  let first_line, xs = read_entire_line xs in
+  match is_header_line 0 chr xs with
+  | Some (count, follows) when count > 1 -> Some (Heading (depth, String.of_char_list first_line), follows)
+  | _ -> None
+;;
+
+let two_line_parser_equals = parse_header_two_lines '=' 0;;
+let two_line_parser_dash = parse_header_two_lines '-' 1;;
+let two_line_parser = bind_parser two_line_parser_equals two_line_parser_dash;;
+let parse_header = bind_parser parse_header_starting_with_hash two_line_parser;;

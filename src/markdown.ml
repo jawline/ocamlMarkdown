@@ -46,6 +46,12 @@ let test_two_paragraphs_with_bold =
    This is paragraph two. Ditto."
 ;;
 
+let test_multiline_header =
+"Hello World
+===========
+What's up?"
+;;
+
 let%test "test_paragraph" =
   match parse test_with_paragraph_and_eol with
   | Fragments [ Paragraph [ Text x ] ] when String.( = ) x test_with_paragraph_and_eol ->
@@ -77,6 +83,13 @@ let%test "two_paragraphs_bold" =
 let%test "test_header" =
   match parse test_with_header with
   | Fragments [ Heading _; Paragraph _ ] -> true
+  | _ -> false
+;;
+
+let%test "mutliline_header" =
+  let header = parse test_multiline_header in
+  match header with
+  | Fragments [ Heading (depth, x); Paragraph [ Text y ] ] when depth = 0 && String.(=) x "Hello World" && String.(=) y "What's up?" -> true
   | _ -> false
 ;;
 

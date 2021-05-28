@@ -4,6 +4,7 @@ open Fragment
 
 (* TODO: Escaping *)
 
+(* This method generates predicates for the special text sections like ** for bold and _ for italics. It will generate a method that returns true if the same character is repeated count times *)
 let repeated_character (expected : char) (count : int) =
   let rec verify xs i =
     if i = count
@@ -127,8 +128,10 @@ let rec parse_paragraph_fragment xs =
          parse_paragraph_fragment
          italic_wrap)
   in
+
   (* We combine the bold and italics parsers with bold taking precedence *)
   let special_text_parser = bind_parser assembled_bold_parser assembled_italic_parser in
+
   (* Finally this is combined with the fallback text parser that forces forward progress (if no rule can be satisfied, we assume it is just normal text and consume at least one character as text *)
   let combined_parser = bind_parser special_text_parser parse_text in
   combined_parser xs
