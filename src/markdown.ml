@@ -25,7 +25,23 @@ let rec parse_fragments xs =
 ;;
 
 let parse (json : string) : t = Fragments (parse_fragments (String.to_list json))
-let test_with_header = "\n# Hello World\nThis is a paragraph"
+
+let test_with_header = "
+
+# Hello World
+
+
+This is a paragraph"
+;;
+
+let test_with_deeper_header = "
+
+### Hello World
+
+
+This is a paragraph"
+;;
+
 let test_with_italic = "*Italic Test*"
 let test_with_bold = "**Bold Test**"
 let test_with_incorrect_bold = "***Bold Te*st**"
@@ -87,22 +103,23 @@ let%test "two_paragraphs_bold" =
 ;;
 
 let%test "test_header" =
-  match parse test_with_header with
-  | Fragments [ Heading _; Paragraph _ ] -> true
+  let parsed_header = parse test_with_header in
+  match parsed_header with
+  | Fragments [ Heading (depth, x); Paragraph [Text y] ] when depth = 1 && String.(=) x "Hello World" && String.(=) y "This is a paragraph" -> true
   | _ -> false
 ;;
 
 let%test "mutliline_header" =
   let header = parse test_multiline_header in
   match header with
-  | Fragments [ Heading (depth, x); Paragraph [ Text y ] ] when depth = 0 && String.(=) x "Hello World" && String.(=) y "What's up?" -> true
+  | Fragments [ Heading (depth, x); Paragraph [ Text y ] ] when depth = 1 && String.(=) x "Hello World" && String.(=) y "What's up?" -> true
   | _ -> false
 ;;
 
 let%test "deeper_mutliline_header" =
   let header = parse test_deeper_multiline_header in
   match header with
-  | Fragments [ Heading (depth, x); Paragraph [ Text y ] ] when depth = 1 && String.(=) x "Hello World" && String.(=) y "What's up?" -> true
+  | Fragments [ Heading (depth, x); Paragraph [ Text y ] ] when depth = 2 && String.(=) x "Hello World" && String.(=) y "What's up?" -> true
   | _ -> false
 ;;
 
