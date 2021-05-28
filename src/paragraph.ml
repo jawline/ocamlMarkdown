@@ -33,7 +33,7 @@ let code_predicate_triple = repeated_character '`' 3
 
 (* If we are at a paragraph ending sequence or any of the bold / italic / code predicates are satisfied then the text parsing is terminated and the next fragment (potentially code, bold, new paragraph) is parsed *)
 let terminates_text xs =
-  ends_paragraph xs || is_some (bold_predicate xs) || is_some (italic_predicate xs)
+  ends_paragraph xs || is_some (bold_predicate xs) || is_some (italic_predicate xs) || is_some (code_predicate xs)
 ;;
 
 (* Parse a list of characters until a stopping predicate is satisfied, forms the foundation of parse_text and parse_code *)
@@ -112,15 +112,20 @@ let paragraph_format_parser
        | None -> None)
 ;;
 
+(* parse_formatted_section forms the foundation of the special text parsers (Like Bold, Italic) where the paragraph parser needs to recurse on itself but with an additional terminating predicate (I.e, now terminate at __ rather than just \n\n). We split this logic out into a series of functions with their recursors or continuations as methods to reduce repeated code.
+  predicate is the predicate that opens and close this special block (e.g, ** for Bold or * for Italic)
+  recursor is the method to be used to take the inner xs and return a list of inner fragments (i.e, given a list of characters after the opening ** recursor should process all characters until the closing ** and return as a Fragment.t list)
+  wrap takes the list of fragments returned by parser and wraps it in a single Fragment.t, i.e, wrap x for the bold parser will wrap the list as (Bold x)
+*)
 let parse_formatted_section predicate recurser wrap =
-  let parse_bold_inner xs =
+  let parse_formatted_inner xs =
     parse_paragraph_contents
       (function
         | test_input -> is_some (predicate test_input) || ends_paragraph test_input)
       recurser
       xs
   in
-  paragraph_format_parser predicate predicate parse_bold_inner wrap
+  paragraph_format_parser predicate predicate parse_formatted_inner wrap
 ;;
 
 let rec parse_paragraph_fragment xs =

@@ -109,9 +109,16 @@ let%test "header" =
   | _ -> false
 ;;
 
+
+let%test "simple_code_and_text" =
+  let parsed_code = parse "Goodbye ``Hello``" in
+  match parsed_code with
+  | Fragments [ Paragraph [Text x; Code y] ] when String.(=) x "Goodbye " && String.(=) y "Hello" -> true
+  | _ -> false
+;;
+
 let%test "simple_code" =
   let parsed_code = parse "``Hello``" in
-  printf "%s\n" (show parsed_code);
   match parsed_code with
   | Fragments [ Paragraph [Code y] ] when String.(=) y "Hello" -> true
   | _ -> false
