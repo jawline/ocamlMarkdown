@@ -33,22 +33,25 @@ let code_predicate_triple = repeated_character '`' 3
 
 (* If we are at a paragraph ending sequence or any of the bold / italic / code predicates are satisfied then the text parsing is terminated and the next fragment (potentially code, bold, new paragraph) is parsed *)
 let terminates_text xs =
-  ends_paragraph xs || is_some (bold_predicate xs) || is_some (italic_predicate xs) || is_some (code_predicate xs)
+  ends_paragraph xs
+  || is_some (bold_predicate xs)
+  || is_some (italic_predicate xs)
+  || is_some (code_predicate xs)
 ;;
 
 (* Parse a list of characters until a stopping predicate is satisfied, forms the foundation of parse_text and parse_code *)
-let rec parse_text_method stop_predicate xs = match xs with
-    | [] -> [], xs
-    | xs when stop_predicate xs -> [], xs
-    | x :: xs ->
-      let rest, follows = parse_text_method stop_predicate xs in
-      x :: rest, follows
+let rec parse_text_method stop_predicate xs =
+  match xs with
+  | [] -> [], xs
+  | xs when stop_predicate xs -> [], xs
+  | x :: xs ->
+    let rest, follows = parse_text_method stop_predicate xs in
+    x :: rest, follows
 ;;
 
 (* this reads characters from the stream until a sequence that terminates a contiguous text block is reached *)
 let parse_text xs =
-  let parse_text_inner = parse_text_method terminates_text
-  in
+  let parse_text_inner = parse_text_method terminates_text in
   (*
     We force forward progress in the parser by always taking at least one character if we fall through to parse_text
     Otherwise we might get stuck trying to parse an unclosed bold, italic, code block etc *)
@@ -63,17 +66,22 @@ let parse_text xs =
 let parse_code_core predicate xs =
   let parse_code_inner = parse_text_method (fun xs -> is_some (predicate xs)) in
   match predicate xs with
-  | Some xs -> (
-    let (code, rest) = parse_code_inner xs in
-    match predicate rest with
-    | Some after_code -> Some (Code (String.of_char_list code), after_code)
-    | None -> None
-  )
+  | Some xs ->
+    let code, rest = parse_code_inner xs in
+    (match predicate rest with
+     | Some after_code -> Some (Code (String.of_char_list code), after_code)
+     | None -> None)
   | None -> None
 ;;
 
 (* Generate a parsing method for each of the three code start predicates. They are added in reverse order so the longer options take precedence, otherwise ```Hello``` would evaluate to `` `Hello` ``*)
-let code_parser = bind_parser (bind_parser (parse_code_core code_predicate_triple) (parse_code_core code_predicate_double)) (parse_code_core code_predicate);;
+let code_parser =
+  bind_parser
+    (bind_parser
+       (parse_code_core code_predicate_triple)
+       (parse_code_core code_predicate_double))
+    (parse_code_core code_predicate)
+;;
 
 let rec parse_paragraph_contents ends_predicate fragment_parser xs =
   let recurse new_thing follows =
@@ -113,9 +121,9 @@ let paragraph_format_parser
 ;;
 
 (* parse_formatted_section forms the foundation of the special text parsers (Like Bold, Italic) where the paragraph parser needs to recurse on itself but with an additional terminating predicate (I.e, now terminate at __ rather than just \n\n). We split this logic out into a series of functions with their recursors or continuations as methods to reduce repeated code.
-  predicate is the predicate that opens and close this special block (e.g, ** for Bold or * for Italic)
-  recursor is the method to be used to take the inner xs and return a list of inner fragments (i.e, given a list of characters after the opening ** recursor should process all characters until the closing ** and return as a Fragment.t list)
-  wrap takes the list of fragments returned by parser and wraps it in a single Fragment.t, i.e, wrap x for the bold parser will wrap the list as (Bold x)
+   predicate is the predicate that opens and close this special block (e.g, ** for Bold or * for Italic)
+   recursor is the method to be used to take the inner xs and return a list of inner fragments (i.e, given a list of characters after the opening ** recursor should process all characters until the closing ** and return as a Fragment.t list)
+   wrap takes the list of fragments returned by parser and wraps it in a single Fragment.t, i.e, wrap x for the bold parser will wrap the list as (Bold x)
 *)
 let parse_formatted_section predicate recurser wrap =
   let parse_formatted_inner xs =
@@ -157,11 +165,9 @@ let rec parse_paragraph_fragment xs =
          parse_paragraph_fragment
          italic_wrap)
   in
-
   (* We combine the bold and italics parsers with bold taking precedence *)
   let special_text_parser = bind_parser assembled_bold_parser assembled_italic_parser in
   let special_text_parser = bind_parser special_text_parser code_parser in
-
   (* Finally this is combined with the fallback text parser that forces forward progress (if no rule can be satisfied, we assume it is just normal text and consume at least one character as text *)
   let combined_parser = bind_parser special_text_parser parse_text in
   combined_parser xs

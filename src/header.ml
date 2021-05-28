@@ -29,27 +29,32 @@ let parse_header_starting_with_hash xs =
   | _ -> None
 ;;
 
-let rec read_entire_line xs = match xs with
-  | [] -> ([], [])
-  | ('\n'::xs) -> ([], xs)
-  | (x::xs) -> let rest, follows = read_entire_line xs in (x::rest, follows)
+let rec read_entire_line xs =
+  match xs with
+  | [] -> [], []
+  | '\n' :: xs -> [], xs
+  | x :: xs ->
+    let rest, follows = read_entire_line xs in
+    x :: rest, follows
 ;;
 
-let rec is_header_line count chr xs = match xs with
+let rec is_header_line count chr xs =
+  match xs with
   | [] -> Some (count, [])
-  | ('\n'::xs) -> Some (count, xs)
-  | (x::xs) when Char.(=) x chr -> is_header_line (count + 1) chr xs
+  | '\n' :: xs -> Some (count, xs)
+  | x :: xs when Char.( = ) x chr -> is_header_line (count + 1) chr xs
   | _ -> None
 ;;
 
 let parse_header_two_lines chr depth xs =
   let first_line, xs = read_entire_line xs in
   match is_header_line 0 chr xs with
-  | Some (count, follows) when count > 1 -> Some (Heading (depth, String.of_char_list first_line), follows)
+  | Some (count, follows) when count > 1 ->
+    Some (Heading (depth, String.of_char_list first_line), follows)
   | _ -> None
 ;;
 
-let two_line_parser_equals = parse_header_two_lines '=' 1;;
-let two_line_parser_dash = parse_header_two_lines '-' 2;;
-let two_line_parser = bind_parser two_line_parser_equals two_line_parser_dash;;
-let parse_header = bind_parser parse_header_starting_with_hash two_line_parser;;
+let two_line_parser_equals = parse_header_two_lines '=' 1
+let two_line_parser_dash = parse_header_two_lines '-' 2
+let two_line_parser = bind_parser two_line_parser_equals two_line_parser_dash
+let parse_header = bind_parser parse_header_starting_with_hash two_line_parser
