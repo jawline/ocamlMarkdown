@@ -2,8 +2,6 @@ open Core
 open Fragment
 open Util
 
-let skip = Util.skip
-
 let rec parse_header_count_depth xs =
   match xs with
   | '#' :: xs ->

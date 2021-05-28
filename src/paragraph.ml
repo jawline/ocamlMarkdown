@@ -39,19 +39,9 @@ let terminates_text xs =
   || is_some (code_predicate xs)
 ;;
 
-(* Parse a list of characters until a stopping predicate is satisfied, forms the foundation of parse_text and parse_code *)
-let rec parse_text_method stop_predicate xs =
-  match xs with
-  | [] -> [], xs
-  | xs when stop_predicate xs -> [], xs
-  | x :: xs ->
-    let rest, follows = parse_text_method stop_predicate xs in
-    x :: rest, follows
-;;
-
 (* this reads characters from the stream until a sequence that terminates a contiguous text block is reached *)
 let parse_text xs =
-  let parse_text_inner = parse_text_method terminates_text in
+  let parse_text_inner = parse_characters_until terminates_text in
   (*
     We force forward progress in the parser by always taking at least one character if we fall through to parse_text
     Otherwise we might get stuck trying to parse an unclosed bold, italic, code block etc *)
@@ -64,7 +54,7 @@ let parse_text xs =
 
 (* this reads out a series of characters between ` `` and ``` opening blocks as code segments *)
 let parse_code_core predicate xs =
-  let parse_code_inner = parse_text_method (fun xs -> is_some (predicate xs)) in
+  let parse_code_inner = parse_characters_until (fun xs -> is_some (predicate xs)) in
   match predicate xs with
   | Some xs ->
     let code, rest = parse_code_inner xs in
@@ -173,7 +163,7 @@ let rec parse_paragraph_fragment xs =
   combined_parser xs
 ;;
 
-let parse_paragraph xs =
+let parse xs =
   let contents, follows =
     parse_paragraph_contents ends_paragraph parse_paragraph_fragment xs
   in

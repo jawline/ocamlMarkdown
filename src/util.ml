@@ -34,3 +34,13 @@ let bind_parser (f_a : parse_method) (f_b : parse_method) = function
      | Some x -> Some x
      | None -> f_b xs)
 ;;
+
+(* Parse a list of characters until a stopping predicate is satisfied, forms the foundation of parse_text and parse_code *)
+let rec parse_characters_until stop_predicate xs =
+  match xs with
+  | [] -> [], xs
+  | xs when stop_predicate xs -> [], xs
+  | x :: xs ->
+    let rest, follows = parse_characters_until stop_predicate xs in
+    x :: rest, follows
+;;

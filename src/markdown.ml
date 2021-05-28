@@ -7,7 +7,7 @@ let skip = Util.skip
 
 type t = Fragment.t
 
-let parse_fragment = Util.bind_parser Header.parse_header Paragraph.parse_paragraph
+let parse_fragment = Util.bind_parser Header.parse_header Paragraph.parse
 
 let rec parse_fragments xs =
   match skip xs with
@@ -50,6 +50,13 @@ let test_two_paragraphs_with_bold =
 let test_multiline_header = "Hello World\n===========\nWhat's up?"
 let test_deeper_multiline_header = "Hello World\n---\nWhat's up?"
 
+let test_basic_list =
+"
+- Hello
+- World
+- What
+"
+
 let%test "test_paragraph" =
   match parse test_with_paragraph_and_eol with
   | Fragments [ Paragraph [ Text x ] ] when String.( = ) x test_with_paragraph_and_eol ->
@@ -75,6 +82,13 @@ let%test "two_paragraphs_bold" =
       && String.( = ) y "great"
       && String.( = ) z " paragraph. Many things happen."
       && String.( = ) q "This is paragraph two. Ditto." -> true
+  | _ -> false
+;;
+
+let%test "basic_list" =
+  let parsed_list = parse test_basic_list in
+  match parsed_list with
+  | Fragments [ List [ Fragments [ Text x ]; Fragments [ Text y]; Fragments [ Text z] ] ] when String.(=) x "Hello" && String.(=) y "World" && String.(=) z "What" -> true
   | _ -> false
 ;;
 
