@@ -49,13 +49,7 @@ let test_two_paragraphs_with_bold =
 
 let test_multiline_header = "Hello World\n===========\nWhat's up?"
 let test_deeper_multiline_header = "Hello World\n---\nWhat's up?"
-
-let test_basic_list =
-"
-- Hello
-- World
-- What
-"
+let test_basic_list = "\n- Hello\n- World\n- What\n"
 
 let%test "test_paragraph" =
   match parse test_with_paragraph_and_eol with
@@ -88,7 +82,9 @@ let%test "two_paragraphs_bold" =
 let%test "basic_list" =
   let parsed_list = parse test_basic_list in
   match parsed_list with
-  | Fragments [ List [ Fragments [ Text x ]; Fragments [ Text y]; Fragments [ Text z] ] ] when String.(=) x "Hello" && String.(=) y "World" && String.(=) z "What" -> true
+  | Fragments
+      [ List [ Fragments [ Text x ]; Fragments [ Text y ]; Fragments [ Text z ] ] ]
+    when String.( = ) x "Hello" && String.( = ) y "World" && String.( = ) z "What" -> true
   | _ -> false
 ;;
 
