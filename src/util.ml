@@ -55,3 +55,23 @@ let rec parse_characters_until stop_predicate xs =
     let rest, follows = parse_characters_until stop_predicate xs in
     x :: rest, follows
 ;;
+
+let escape_char chr =
+  match chr with
+  | '\\'
+  | '*'
+  | '+'
+  | '-'
+  | '`'
+  | '{'
+  | '}'
+  | '<'
+  | '>'
+  | '#'
+  | '('
+  | ')'
+  | '_'
+  | '!'
+  | '|' -> true
+  | _ -> false
+;;
