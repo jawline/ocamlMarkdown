@@ -45,9 +45,9 @@ let parse_text xs =
   (*
     We force forward progress in the parser by always taking at least one character if we fall through to parse_text
     Otherwise we might get stuck trying to parse an unclosed bold, italic, code block etc *)
-  match xs with
-  | [] -> None
-  | x :: xs ->
+  match take_character xs with
+  | None -> None
+  | Some (x, xs) ->
     let parsed_text, follows = parse_text_inner xs in
     Some (Text (String.of_char_list (x :: parsed_text)), follows)
 ;;
