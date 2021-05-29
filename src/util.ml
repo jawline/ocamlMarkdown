@@ -46,16 +46,7 @@ let rec bind_parsers xs =
   | _ -> raise_s (sexp_of_string "bind_parser cannot be called with an empty list")
 ;;
 
-(* Parse a list of characters until a stopping predicate is satisfied, forms the foundation of parse_text and parse_code *)
-let rec parse_characters_until stop_predicate xs =
-  match xs with
-  | [] -> [], xs
-  | xs when stop_predicate xs -> [], xs
-  | x :: xs ->
-    let rest, follows = parse_characters_until stop_predicate xs in
-    x :: rest, follows
-;;
-
+(* Returns true if a character is escapable, false otherwise *)
 let escape_char chr =
   match chr with
   | '\\'
@@ -74,4 +65,23 @@ let escape_char chr =
   | '!'
   | '|' -> true
   | _ -> false
+;;
+
+(* Takes a text character, deals with escaping *)
+let take_character xs =
+  match xs with
+  | [] -> None
+  | ('\\'::x::xs) when escape_char x -> Some (x, xs)
+  | (x::xs) -> Some (x, xs)
+;;
+
+(* Parse a list of characters until a stopping predicate is satisfied, forms the foundation of parse_text and parse_code *)
+let rec parse_characters_until stop_predicate xs =
+  if stop_predicate xs then [], xs else
+  match take_character xs with
+  | Some (character, xs) ->
+    let following_text, xs = parse_characters_until stop_predicate xs in
+    character::following_text, xs
+  (* None implies no more characters, stop here *)
+  | None -> [], xs
 ;;
