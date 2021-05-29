@@ -164,6 +164,13 @@ let%test "simple_italic" =
   | _ -> false
 ;;
 
+let%test "simple_escape" =
+  let escaped_block = parse "\\- Hello World" in
+  match escaped_block with
+  | Fragments [ Paragraph [ Text x ] ] when String.(=) x "- Hello World" -> true
+  | _ -> false
+;;
+
 let%test "test_weirdly_formatted_italics_in_bold" =
   let bold_block = parse test_with_incorrect_bold in
   match bold_block with
