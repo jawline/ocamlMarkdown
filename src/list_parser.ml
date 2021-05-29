@@ -48,8 +48,8 @@ let parse_list line_parser chr xs =
 (* If at the start of a list, parse it from the markdown, otherwise None *)
 let parse =
   bind_parsers
-    [ parse_list Paragraph.parse '-'
-    ; parse_list Paragraph.parse '*'
-    ; parse_list Paragraph.parse '+'
+    [ parse_list Paragraph_parser.parse '-'
+    ; parse_list Paragraph_parser.parse '*'
+    ; parse_list Paragraph_parser.parse '+'
     ]
 ;;
