@@ -43,9 +43,9 @@ let ends_paragraph = function
  * If f_a returns Some, then return the result of f_a, otherwise return the result of f_b
 *)
 let bind_parser (f_a : parse_method) (f_b : parse_method) xs =
-    match f_a xs with
-     | Some x -> Some x
-     | None -> f_b xs
+  match f_a xs with
+  | Some x -> Some x
+  | None -> f_b xs
 ;;
 
 (* Calls bind parser on a list of parsers, with precedence being given to the first item in the list *)

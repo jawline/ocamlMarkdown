@@ -9,7 +9,7 @@ let rec line_contains_only chr count = function
 ;;
 
 (* Checks a series of possible horizontal rule methods and returns a horizontal rule if it's a match.
-  If any rules return Some then the first to return Some is returned, otherwise None is returned *)
+   If any rules return Some then the first to return Some is returned, otherwise None is returned *)
 let rec check_hr hr_list xs =
   match hr_list with
   | [] -> None
