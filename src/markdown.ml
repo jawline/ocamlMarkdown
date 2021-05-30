@@ -108,11 +108,12 @@ let%test "basic_list" =
   let parsed_list = parse test_basic_list in
   match parsed_list with
   | Fragments
-      [ List (Unordered,
-          [ Fragments [ Text "Hello" ]
-          ; Fragments [ Text "World" ]
-          ; Fragments [ Text "What" ]
-          ])
+      [ List
+          ( Unordered
+          , [ Fragments [ Text "Hello" ]
+            ; Fragments [ Text "World" ]
+            ; Fragments [ Text "What" ]
+            ] )
       ] -> true
   | _ -> false
 ;;

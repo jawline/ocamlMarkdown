@@ -1,4 +1,6 @@
-type list_type = Ordered | Unordered
+type list_type =
+  | Ordered
+  | Unordered
 [@@deriving show]
 
 type t =

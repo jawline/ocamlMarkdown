@@ -11,9 +11,9 @@ let paragraph_inner paragraph =
 ;;
 
 (* This returns a list of list items where each item is a Fragment.t Fragments *)
-let rec parse_list_inner line_parser chr xs =
+let rec parse_list_inner line_parser chr_pred xs =
   match xs with
-  | x :: ' ' :: xs when Char.( = ) x chr ->
+  | x :: ' ' :: xs when chr_pred x ->
     let rest_of_line, xs = list_line_parser (skip xs) in
     (match line_parser (skip rest_of_line) with
      | Some (paragraph, _) ->
@@ -21,7 +21,7 @@ let rec parse_list_inner line_parser chr xs =
        (* The list_line_parser stops at the terminating character, we now need to recurse only after the terminating character *)
        (match ends_line xs with
         | Some xs ->
-          let rest_of_fragments, xs = parse_list_inner line_parser chr xs in
+          let rest_of_fragments, xs = parse_list_inner line_parser chr_pred xs in
           this_fragment :: rest_of_fragments, xs
         (* Something went wrong, terminate the list before this list item *)
         | _ -> [], xs)
@@ -29,10 +29,12 @@ let rec parse_list_inner line_parser chr xs =
   | _ -> [], xs
 ;;
 
-let parse_list line_parser chr xs =
-  match parse_list_inner line_parser chr xs with
+let character_predicate chr x = Char.( = ) x chr
+
+let parse_list line_parser list_type chr_pred xs =
+  match parse_list_inner line_parser chr_pred xs with
   | list_items, follows when List.length list_items > 0 ->
-    Some (Fragment.List (Unordered, list_items), follows)
+    Some (Fragment.List (list_type, list_items), follows)
   | _ -> None
 ;;
 
@@ -41,8 +43,8 @@ let parse_list line_parser chr xs =
 (* If at the start of a list, parse it from the markdown, otherwise None *)
 let parse =
   bind_parsers
-    [ parse_list Paragraph_parser.parse '-'
-    ; parse_list Paragraph_parser.parse '*'
-    ; parse_list Paragraph_parser.parse '+'
+    [ parse_list Paragraph_parser.parse Unordered (character_predicate '-')
+    ; parse_list Paragraph_parser.parse Unordered (character_predicate '*')
+    ; parse_list Paragraph_parser.parse Unordered (character_predicate '+')
     ]
 ;;
