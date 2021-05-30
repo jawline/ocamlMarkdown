@@ -217,13 +217,17 @@ let%test "not_horizontal_rule" =
 let%test "link" =
   let link_block = parse "[Website](http://url.com)" in
   match link_block with
-  | Fragments [ Paragraph [ Link (x, y) ] ] when String.(=) x "Website" && String.(=) y "http://url.com" -> true
+  | Fragments [ Paragraph [ Link (x, y) ] ]
+    when String.( = ) x "Website" && String.( = ) y "http://url.com" -> true
   | _ -> false
 ;;
 
 let%test "link_in_text" =
   let link_block = parse "Hello, I'm contacting you from [Website](http://url.com)" in
   match link_block with
-  | Fragments [ Paragraph [ Text prelude; Link (x, y) ] ] when String.(=) prelude "Hello, I'm contacting you from " && String.(=) x "Website" && String.(=) y "http://url.com" -> true
+  | Fragments [ Paragraph [ Text prelude; Link (x, y) ] ]
+    when String.( = ) prelude "Hello, I'm contacting you from "
+      && String.( = ) x "Website"
+      && String.( = ) y "http://url.com" -> true
   | _ -> false
 ;;

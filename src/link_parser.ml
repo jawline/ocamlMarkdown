@@ -12,7 +12,6 @@ let starts_link_title = is_character '['
 let ends_link_title = is_character ']'
 let starts_link_url = is_character '('
 let ends_link_url = is_character ')'
-
 let starts_link xs = starts_link_title xs
 
 let fetch_between start_predicate end_predicate xs =
@@ -42,4 +41,4 @@ let parse_link xs =
   | None -> None
 ;;
 
-let parse = parse_link;;
+let parse = parse_link
