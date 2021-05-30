@@ -12,8 +12,8 @@ let paragraph_inner paragraph =
 
 (* This returns a list of list items where each item is a Fragment.t Fragments *)
 let rec parse_list_inner line_parser chr_pred xs =
-  match xs with
-  | x :: ' ' :: xs when chr_pred x ->
+  match chr_pred xs with
+  | Some xs ->
     let rest_of_line, xs = list_line_parser (skip xs) in
     (match line_parser (skip rest_of_line) with
      | Some (paragraph, _) ->
@@ -26,14 +26,17 @@ let rec parse_list_inner line_parser chr_pred xs =
         (* Something went wrong, terminate the list before this list item *)
         | _ -> [], xs)
      | None -> [], xs)
-  | _ -> [], xs
+  | None -> [], xs
 ;;
 
-let character_predicate chr x = Char.( = ) x chr
+let character_predicate chr = function
+  | x :: ' ' :: xs when Char.( = ) x chr -> Some xs
+  | _ -> None
+;;
 
 let digit_predicate = function
-  | '0' .. '9' -> true
-  | _ -> false
+  | '0' .. '9' :: '.' :: ' ' :: xs -> Some xs
+  | _ -> None
 ;;
 
 let parse_list line_parser list_type chr_pred xs =

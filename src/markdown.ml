@@ -68,6 +68,10 @@ let test_multiline_header = "Hello World\n===========\nWhat's up?"
 let test_deeper_multiline_header = "Hello World\n---\nWhat's up?"
 let test_basic_list = "\n- Hello\n- World\n- What\n"
 
+let test_basic_ordered_list =
+  "1. Hello world\n2. What's up?\n3. I don't know\n3. This is still valid"
+;;
+
 let test_horizontal_rules =
   "\nThis is some text\n\n---------------------\n\nThis is other text"
 ;;
@@ -113,6 +117,21 @@ let%test "basic_list" =
           , [ Fragments [ Text "Hello" ]
             ; Fragments [ Text "World" ]
             ; Fragments [ Text "What" ]
+            ] )
+      ] -> true
+  | _ -> false
+;;
+
+let%test "basic_ordered_list" =
+  let parsed_list = parse test_basic_ordered_list in
+  match parsed_list with
+  | Fragments
+      [ List
+          ( Ordered
+          , [ Fragments [ Text "Hello world" ]
+            ; Fragments [ Text "What's up?" ]
+            ; Fragments [ Text "I don't know" ]
+            ; Fragments [ Text "This is still valid" ]
             ] )
       ] -> true
   | _ -> false
