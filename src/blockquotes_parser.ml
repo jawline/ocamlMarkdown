@@ -17,7 +17,7 @@ let rec extract_blockquotes_lines (xs : char list) : string list * char list =
  *)
 let parse markdown_parser xs =
   match xs with
-  | '>' :: xs ->
+  | '>' :: _ ->
     let blockquotes_section, xs = extract_blockquotes_lines xs in
     Some (Fragment.Blockquote (markdown_parser (String.concat blockquotes_section)), xs)
   | _ -> None

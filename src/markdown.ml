@@ -224,6 +224,13 @@ let%test "link" =
   | _ -> false
 ;;
 
+let%test "blockquote" =
+  let block_quote = parse "> Hello World" in
+  match block_quote with
+  | Fragments [ (Blockquote (Fragments [Paragraph [Text x]])) ] when String.(=) x "Hello World" -> true
+  | _ -> false
+;;
+
 let%test "link_in_text" =
   let link_block = parse "Hello, I'm contacting you from [Website](http://url.com)" in
   match link_block with
