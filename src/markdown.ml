@@ -8,7 +8,12 @@ let skip = Util.skip
 type t = Fragment.t
 
 let parse_fragment =
-  bind_parsers [ Header_parser.parse; List_parser.parse; Horizontal_rule_parser.parse; Paragraph_parser.parse ]
+  bind_parsers
+    [ Header_parser.parse
+    ; List_parser.parse
+    ; Horizontal_rule_parser.parse
+    ; Paragraph_parser.parse
+    ]
 ;;
 
 let rec parse_fragments xs =
@@ -53,16 +58,11 @@ let test_multiline_header = "Hello World\n===========\nWhat's up?"
 let test_deeper_multiline_header = "Hello World\n---\nWhat's up?"
 let test_basic_list = "\n- Hello\n- World\n- What\n"
 
-let test_horizontal_rules = "
-This is some text
-
----------------------
-
-This is other text"
+let test_horizontal_rules =
+  "\nThis is some text\n\n---------------------\n\nThis is other text"
 ;;
 
-let test_not_hr =
-"--";;
+let test_not_hr = "--"
 
 let%test "test_paragraph" =
   match parse test_with_paragraph_and_eol with
@@ -178,7 +178,7 @@ let%test "simple_italic" =
 let%test "simple_escape" =
   let escaped_block = parse "\\- Hello World" in
   match escaped_block with
-  | Fragments [ Paragraph [ Text x ] ] when String.(=) x "- Hello World" -> true
+  | Fragments [ Paragraph [ Text x ] ] when String.( = ) x "- Hello World" -> true
   | _ -> false
 ;;
 
@@ -202,13 +202,28 @@ let%test "bold_within_word" =
 let%test "horizontal_rule" =
   let hr_block = parse test_horizontal_rules in
   match hr_block with
-  | Fragments [ Paragraph [ Text x ]; HorizontalRule; Paragraph [ Text y ]] when String.(=) x "This is some text" && String.(=) y "This is other text" -> true
+  | Fragments [ Paragraph [ Text x ]; HorizontalRule; Paragraph [ Text y ] ]
+    when String.( = ) x "This is some text" && String.( = ) y "This is other text" -> true
   | _ -> false
 ;;
 
 let%test "not_horizontal_rule" =
   let hr_block = parse test_not_hr in
   match hr_block with
-  | Fragments [ Paragraph [ Text x ] ] when String.(=) x "--" -> true
+  | Fragments [ Paragraph [ Text x ] ] when String.( = ) x "--" -> true
+  | _ -> false
+;;
+
+let%test "link" =
+  let link_block = parse "[Website](http://url.com)" in
+  match link_block with
+  | Fragments [ Paragraph [ Link (x, y) ] ] when String.(=) x "Website" && String.(=) y "http://url.com" -> true
+  | _ -> false
+;;
+
+let%test "link_in_text" =
+  let link_block = parse "Hello, I'm contacting you from [Website](http://url.com)" in
+  match link_block with
+  | Fragments [ Paragraph [ Text prelude; Link (x, y) ] ] when String.(=) prelude "Hello, I'm contacting you from " && String.(=) x "Website" && String.(=) y "http://url.com" -> true
   | _ -> false
 ;;

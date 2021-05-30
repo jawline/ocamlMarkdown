@@ -71,17 +71,19 @@ let escape_char chr =
 let take_character xs =
   match xs with
   | [] -> None
-  | ('\\'::x::xs) when escape_char x -> Some (x, xs)
-  | (x::xs) -> Some (x, xs)
+  | '\\' :: x :: xs when escape_char x -> Some (x, xs)
+  | x :: xs -> Some (x, xs)
 ;;
 
 (* Parse a list of characters until a stopping predicate is satisfied, forms the foundation of parse_text and parse_code *)
 let rec parse_characters_until stop_predicate xs =
-  if stop_predicate xs then [], xs else
-  match take_character xs with
-  | Some (character, xs) ->
-    let following_text, xs = parse_characters_until stop_predicate xs in
-    character::following_text, xs
-  (* None implies no more characters, stop here *)
-  | None -> [], xs
+  if stop_predicate xs
+  then [], xs
+  else (
+    match take_character xs with
+    | Some (character, xs) ->
+      let following_text, xs = parse_characters_until stop_predicate xs in
+      character :: following_text, xs
+    (* None implies no more characters, stop here *)
+    | None -> [], xs)
 ;;

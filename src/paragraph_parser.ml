@@ -37,6 +37,7 @@ let terminates_text xs =
   || is_some (bold_predicate xs)
   || is_some (italic_predicate xs)
   || is_some (code_predicate xs)
+  || is_some (Link_parser.starts_link xs)
 ;;
 
 (* this reads characters from the stream until a sequence that terminates a contiguous text block is reached *)
@@ -158,6 +159,7 @@ let rec parse_paragraph_fragment xs =
   (* We combine the bold and italics parsers with bold taking precedence *)
   let special_text_parser = bind_parser assembled_bold_parser assembled_italic_parser in
   let special_text_parser = bind_parser special_text_parser code_parser in
+  let special_text_parser = bind_parser special_text_parser Link_parser.parse in
   (* Finally this is combined with the fallback text parser that forces forward progress (if no rule can be satisfied, we assume it is just normal text and consume at least one character as text *)
   let combined_parser = bind_parser special_text_parser parse_text in
   combined_parser xs

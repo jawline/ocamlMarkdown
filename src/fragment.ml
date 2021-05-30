@@ -7,5 +7,6 @@ type t =
   | Bold of t
   | Italic of t
   | Heading of (int * string)
+  | Link of (string * string)
   | HorizontalRule
 [@@deriving show]
