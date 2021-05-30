@@ -32,7 +32,7 @@ let rec parse_list_inner line_parser chr xs =
 let parse_list line_parser chr xs =
   match parse_list_inner line_parser chr xs with
   | list_items, follows when List.length list_items > 0 ->
-    Some (Fragment.List list_items, follows)
+    Some (Fragment.List (Unordered, list_items), follows)
   | _ -> None
 ;;
 
