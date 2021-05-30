@@ -14,8 +14,7 @@ let repeated_character (expected : char) (count : int) =
       | x :: xs when Char.( = ) x expected -> verify xs (i + 1)
       | _ -> None)
   in
-  function
-  | xs -> verify xs 0
+  fun xs -> verify xs 0
 ;;
 
 (* Bold text is started and ended by '**' *)

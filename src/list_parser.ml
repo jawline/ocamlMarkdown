@@ -1,11 +1,26 @@
 open Core
 open Util
 
+(* TODO: Nested lists *)
+
+(* Unordered lists are lines prefixed by a single character - + or * and a space *)
+let unordered_list_predicate chr = function
+  | x :: ' ' :: xs when Char.( = ) x chr -> Some xs
+  | _ -> None
+;;
+
+(* Unordered lists are a series of lines prefixed by a digit 0..9 a period (.) and then a space. The digits themselves don't matter - a list of 1. 1. 1. Will be rendered as 1. 2. 3. *)
+let ordered_list_predicate = function
+  | '0' .. '9' :: '.' :: ' ' :: xs -> Some xs
+  | _ -> None
+;;
+
+(* This method is called after the text that begins the list item (e.g, the 1. or * ).
+   This reads the characters until the end of the line or EOF *)
 let list_line_parser = parse_characters_until (fun x -> is_some (ends_line x))
 
 (* When parsing list items we parse as a paragraph (to support specials like italics) but then swap out Paragraph for Header *)
-let paragraph_inner paragraph =
-  match paragraph with
+let paragraph_inner = function
   | Fragment.Paragraph inside -> inside
   | _ -> raise_s (sexp_of_string "Paragraph parser did not parse a paragraph")
 ;;
@@ -29,16 +44,6 @@ let rec parse_list_inner line_parser chr_pred xs =
   | None -> [], xs
 ;;
 
-let character_predicate chr = function
-  | x :: ' ' :: xs when Char.( = ) x chr -> Some xs
-  | _ -> None
-;;
-
-let digit_predicate = function
-  | '0' .. '9' :: '.' :: ' ' :: xs -> Some xs
-  | _ -> None
-;;
-
 let parse_list line_parser list_type chr_pred xs =
   match parse_list_inner line_parser chr_pred xs with
   | list_items, follows when List.length list_items > 0 ->
@@ -46,14 +51,12 @@ let parse_list line_parser list_type chr_pred xs =
   | _ -> None
 ;;
 
-(* TODO: Nested lists *)
-
 (* If at the start of a list, parse it from the markdown, otherwise None *)
 let parse =
   bind_parsers
-    [ parse_list Paragraph_parser.parse Unordered (character_predicate '-')
-    ; parse_list Paragraph_parser.parse Unordered (character_predicate '*')
-    ; parse_list Paragraph_parser.parse Unordered (character_predicate '+')
-    ; parse_list Paragraph_parser.parse Ordered digit_predicate
+    [ parse_list Paragraph_parser.parse Unordered (unordered_list_predicate '-')
+    ; parse_list Paragraph_parser.parse Unordered (unordered_list_predicate '*')
+    ; parse_list Paragraph_parser.parse Unordered (unordered_list_predicate '+')
+    ; parse_list Paragraph_parser.parse Ordered ordered_list_predicate
     ]
 ;;
