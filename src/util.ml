@@ -24,6 +24,14 @@ let rec skip_newline xs =
   | _ -> xs
 ;;
 
+(* Remove newlines from a list of characters *)
+let rec trim_newlines xs =
+  match xs with
+  | [] -> []
+  | '\n' :: xs -> trim_newlines xs
+  | x::xs -> x::(trim_newlines xs)
+;;
+
 (* Returns true of the characters at the start of the list end the current paragraph. This happens either when we reach the end of the document or there are two newlines in a row. *)
 let ends_paragraph xs =
   match xs with

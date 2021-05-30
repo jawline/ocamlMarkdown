@@ -6,7 +6,7 @@ let rec extract_blockquotes_lines (xs : char list) : string list * char list =
   match xs with
   | '>' :: xs ->
     let line, xs = parse_characters_until (fun xs -> is_some (ends_line xs)) xs in
-    let line = String.of_char_list line in
+    let line = String.(concat) [(String.of_char_list line); "\n"] in
     let lines, xs = extract_blockquotes_lines (skip_newline xs) in
     line :: lines, xs
   | _ -> [], xs

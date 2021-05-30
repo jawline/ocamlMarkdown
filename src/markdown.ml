@@ -56,6 +56,13 @@ let test_two_paragraphs_with_bold =
    This is paragraph two. Ditto."
 ;;
 
+let multiline_block_quotes =
+"> # Hello World
+> This is still the block quotes
+>
+>
+> This is another paragraph in it";;
+
 let test_multiline_header = "Hello World\n===========\nWhat's up?"
 let test_deeper_multiline_header = "Hello World\n---\nWhat's up?"
 let test_basic_list = "\n- Hello\n- World\n- What\n"
@@ -227,16 +234,20 @@ let%test "link" =
 let%test "blockquote" =
   let block_quote = parse "> Hello World" in
   match block_quote with
-  | Fragments [ (Blockquote (Fragments [Paragraph [Text x]])) ] when String.(=) x "Hello World" -> true
+  | Fragments [ (Blockquote (Fragments [Paragraph [Text "Hello World"]])) ] -> true
+  | _ -> false
+;;
+
+let%test "multiline_blockquote" =
+  let block_quote = parse multiline_block_quotes in
+  match block_quote with
+  | Fragments [ (Blockquote (Fragments [ Heading(1, "Hello World"); Paragraph [Text "This is still the block quotes"]; Paragraph [ Text "This is another paragraph in it" ]])) ] -> true
   | _ -> false
 ;;
 
 let%test "link_in_text" =
   let link_block = parse "Hello, I'm contacting you from [Website](http://url.com)" in
   match link_block with
-  | Fragments [ Paragraph [ Text prelude; Link (x, y) ] ]
-    when String.( = ) prelude "Hello, I'm contacting you from "
-      && String.( = ) x "Website"
-      && String.( = ) y "http://url.com" -> true
+  | Fragments [ Paragraph [ Text "Hello, I'm contacting you from "; Link ("Website", "http://url.com") ]] -> true
   | _ -> false
 ;;
