@@ -31,6 +31,11 @@ let rec parse_list_inner line_parser chr_pred xs =
 
 let character_predicate chr x = Char.( = ) x chr
 
+let digit_predicate = function
+  | '0' .. '9' -> true
+  | _ -> false
+;;
+
 let parse_list line_parser list_type chr_pred xs =
   match parse_list_inner line_parser chr_pred xs with
   | list_items, follows when List.length list_items > 0 ->
@@ -46,5 +51,6 @@ let parse =
     [ parse_list Paragraph_parser.parse Unordered (character_predicate '-')
     ; parse_list Paragraph_parser.parse Unordered (character_predicate '*')
     ; parse_list Paragraph_parser.parse Unordered (character_predicate '+')
+    ; parse_list Paragraph_parser.parse Ordered digit_predicate
     ]
 ;;
