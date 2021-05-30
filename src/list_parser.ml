@@ -1,14 +1,7 @@
 open Core
 open Util
 
-let ends_list_line xs =
-  match xs with
-  | [] -> Some []
-  | '\n' :: rest -> Some rest
-  | _ -> None
-;;
-
-let list_line_parser = parse_characters_until (fun x -> is_some (ends_list_line x))
+let list_line_parser = parse_characters_until (fun x -> is_some (ends_line x))
 
 (* When parsing list items we parse as a paragraph (to support specials like italics) but then swap out Paragraph for Header *)
 let paragraph_inner paragraph =
@@ -26,7 +19,7 @@ let rec parse_list_inner line_parser chr xs =
      | Some (paragraph, _) ->
        let this_fragment = Fragment.Fragments (paragraph_inner paragraph) in
        (* The list_line_parser stops at the terminating character, we now need to recurse only after the terminating character *)
-       (match ends_list_line xs with
+       (match ends_line xs with
         | Some xs ->
           let rest_of_fragments, xs = parse_list_inner line_parser chr xs in
           this_fragment :: rest_of_fragments, xs

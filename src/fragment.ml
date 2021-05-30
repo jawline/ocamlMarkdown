@@ -8,5 +8,6 @@ type t =
   | Italic of t
   | Heading of (int * string)
   | Link of (string * string)
+  | Blockquote of t
   | HorizontalRule
 [@@deriving show]

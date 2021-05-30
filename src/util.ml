@@ -18,6 +18,12 @@ let rec skip xs =
   | _ -> xs
 ;;
 
+let rec skip_newline xs =
+  match xs with
+  | '\n' :: xs -> skip_newline xs
+  | _ -> xs
+;;
+
 (* Returns true of the characters at the start of the list end the current paragraph. This happens either when we reach the end of the document or there are two newlines in a row. *)
 let ends_paragraph xs =
   match xs with
@@ -86,4 +92,12 @@ let rec parse_characters_until stop_predicate xs =
       character :: following_text, xs
     (* None implies no more characters, stop here *)
     | None -> [], xs)
+;;
+
+(* Predicate evaluations to Some rest if xs is the end of a line *)
+let ends_line xs =
+  match xs with
+  | [] -> Some []
+  | '\n' :: rest -> Some rest
+  | _ -> None
 ;;
