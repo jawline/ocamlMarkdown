@@ -8,7 +8,7 @@ let skip = Util.skip
 type t = Fragment.t
 
 let parse_fragment =
-  bind_parsers [ Header_parser.parse; List_parser.parse; Paragraph_parser.parse ]
+  bind_parsers [ Header_parser.parse; List_parser.parse; Horizontal_rule_parser.parse; Paragraph_parser.parse ]
 ;;
 
 let rec parse_fragments xs =
@@ -52,6 +52,17 @@ let test_two_paragraphs_with_bold =
 let test_multiline_header = "Hello World\n===========\nWhat's up?"
 let test_deeper_multiline_header = "Hello World\n---\nWhat's up?"
 let test_basic_list = "\n- Hello\n- World\n- What\n"
+
+let test_horizontal_rules = "
+This is some text
+
+---------------------
+
+This is other text"
+;;
+
+let test_not_hr =
+"--";;
 
 let%test "test_paragraph" =
   match parse test_with_paragraph_and_eol with
@@ -185,5 +196,19 @@ let%test "bold_within_word" =
   | Fragments [ Paragraph [ Text start; Bold (Fragments [ Text middle ]); Text endw ] ]
     when String.( = ) start "Su" && String.( = ) middle "pe" && String.( = ) endw "r" ->
     true
+  | _ -> false
+;;
+
+let%test "horizontal_rule" =
+  let hr_block = parse test_horizontal_rules in
+  match hr_block with
+  | Fragments [ Paragraph [ Text x ]; HorizontalRule; Paragraph [ Text y ]] when String.(=) x "This is some text" && String.(=) y "This is other text" -> true
+  | _ -> false
+;;
+
+let%test "not_horizontal_rule" =
+  let hr_block = parse test_not_hr in
+  match hr_block with
+  | Fragments [ Paragraph [ Text x ] ] when String.(=) x "--" -> true
   | _ -> false
 ;;
