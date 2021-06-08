@@ -1,3 +1,3 @@
-type t = Fragment.t
+type t = Fragment.t [@@deriving show]
 
 let parse = Parse.parse
