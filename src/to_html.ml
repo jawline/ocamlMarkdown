@@ -23,7 +23,8 @@ let rec to_html (markdown : Fragment.t) : string =
   in
   match markdown with
   | Fragments parts -> to_html_list_of_fragments parts
-  | Paragraph parts -> sprintf "<p>%s</p>\n" (to_html_list_of_fragments parts)
+  | Paragraph parts ->
+    sprintf "<p>%s</p>\n" (String.strip (to_html_list_of_fragments parts))
   | Code code_str -> sprintf "<code><pre>%s</pre></code>" code_str
   | Text text -> text
   | List (list_type, list_items) -> to_html_list list_type list_items
@@ -46,7 +47,9 @@ let%test "basic_text" =
 let%test "basic_texts_split_over_two_lines" =
   let parse = Parse.parse in
   let output = to_html (parse "hello\nworld") in
-  if String.( = ) output "<p>hello world</p>\n" then true else raise (ToHtmlTestingError output)
+  if String.( = ) output "<p>hello world</p>\n"
+  then true
+  else raise (ToHtmlTestingError output)
 ;;
 
 let%test "bold_text" =

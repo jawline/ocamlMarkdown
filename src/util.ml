@@ -31,6 +31,36 @@ let rec trim_newlines = function
   | x :: xs -> x :: trim_newlines xs
 ;;
 
+(* Replace newlines in a fragment with spaces *)
+let rec replace_newlines_with_spaces = function
+  | [] -> []
+  | '\n' :: xs -> ' ' :: replace_newlines_with_spaces xs
+  | x :: xs -> x :: replace_newlines_with_spaces xs
+;;
+
+(* Replace sequences of spaces with a single space *)
+let rec remove_duplicate_spaces = function
+  | [] -> []
+  | ' ' :: ' ' :: xs -> remove_duplicate_spaces (' ' :: xs)
+  | x :: xs -> x :: remove_duplicate_spaces xs
+;;
+
+(* Strip spaces from the beginning of a list of characters *)
+let rec strip_beginning chr = function
+  | [] -> []
+  | x :: xs when Char.( = ) x chr -> strip_beginning chr xs
+  | xs -> xs
+;;
+
+(* Strip spaces at the end works by reversing the list and then calling strip spaces beginning, reversing the final output.
+ * TODO: This is really slow, maybe improve to just an O(n) scan
+ *)
+let strip_end chr xs = List.rev (strip_beginning chr (List.rev xs))
+let strip chr xs = strip_end chr (strip_beginning chr xs)
+
+(* Replace newlines with spaces and then remove duplicate spaces in a paragraph then remove all the spaces toward the beginning and end of the input *)
+let sanitize_paragraph xs = remove_duplicate_spaces (replace_newlines_with_spaces xs)
+
 (* Returns true of the characters at the start of the list end the current paragraph. This happens either when we reach the end of the document or there are two newlines in a row. *)
 let ends_paragraph = function
   (* TODO: skip the whitespace between the first and second newline *)

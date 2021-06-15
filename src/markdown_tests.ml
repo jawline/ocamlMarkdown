@@ -1,5 +1,6 @@
 open Core
 open Parse
+open Fragment
 
 let test_with_header = "\n\n# Hello World\n\n\nThis is a paragraph"
 let test_with_deeper_header = "\n\n### Hello World\n\n\nThis is a paragraph"
@@ -223,7 +224,8 @@ let%test "link" =
 let%test "blockquote" =
   let block_quote = parse "> Hello World" in
   match block_quote with
-  | Fragments [ Blockquote (Fragments [ Paragraph [ Text "Hello World" ] ]) ] -> true
+  (* We expect a trailing space since newlines get substituted for spaces (and stripped in to_html) *)
+  | Fragments [ Blockquote (Fragments [ Paragraph [ Text "Hello World " ] ]) ] -> true
   | _ -> false
 ;;
 
@@ -235,7 +237,7 @@ let%test "multiline_blockquote" =
           (Fragments
             [ Heading (1, "Hello World")
             ; Paragraph [ Text "This is still the block quotes" ]
-            ; Paragraph [ Text "This is another paragraph in it" ]
+            ; Paragraph [ Text "This is another paragraph in it " ]
             ])
       ] -> true
   | _ -> false

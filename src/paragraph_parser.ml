@@ -49,7 +49,7 @@ let parse_text xs =
   | None -> None
   | Some (x, xs) ->
     let parsed_text, follows = parse_text_inner xs in
-    Some (Text (String.of_char_list (trim_newlines (x :: parsed_text))), follows)
+    Some (Text (String.of_char_list (sanitize_paragraph (x :: parsed_text))), follows)
 ;;
 
 (* this reads out a series of characters between ` `` and ``` opening blocks as code segments *)
