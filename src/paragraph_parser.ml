@@ -66,11 +66,7 @@ let parse_code_core predicate xs =
 
 (* Generate a parsing method for each of the three code start predicates. They are added in reverse order so the longer options take precedence, otherwise ```Hello``` would evaluate to `` `Hello` ``*)
 let code_parser =
-  bind_parser
-    (bind_parser
-       (parse_code_core code_predicate_triple)
-       (parse_code_core code_predicate_double))
-    (parse_code_core code_predicate)
+  parse_code_core code_predicate |> bind_parser (parse_code_core code_predicate_double) |> bind_parser (parse_code_core code_predicate_triple)
 ;;
 
 let rec parse_paragraph_contents ends_predicate fragment_parser xs =
