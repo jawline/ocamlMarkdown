@@ -131,12 +131,9 @@ let rec parse_paragraph_fragment xs =
     | xs -> Bold (Fragments xs)
   in
   let assembled_bold_parser =
-    bind_parser
-      (parse_formatted_section bold_predicate parse_paragraph_fragment bold_wrap)
-      (parse_formatted_section
-         bold_predicate_underscore
-         parse_paragraph_fragment
-         bold_wrap)
+    parse_formatted_section bold_predicate_underscore parse_paragraph_fragment bold_wrap
+    |> bind_parser
+         (parse_formatted_section bold_predicate parse_paragraph_fragment bold_wrap)
   in
   (* We do the same for italics, which are begun by a single * or _.
    * Bold takes precedence (so ** will begin a bold, not open and close an italic)
@@ -146,12 +143,12 @@ let rec parse_paragraph_fragment xs =
     | xs -> Italic (Fragments xs)
   in
   let assembled_italic_parser =
-    bind_parser
-      (parse_formatted_section italic_predicate parse_paragraph_fragment italic_wrap)
-      (parse_formatted_section
-         italic_predicate_underscore
-         parse_paragraph_fragment
-         italic_wrap)
+    parse_formatted_section
+      italic_predicate_underscore
+      parse_paragraph_fragment
+      italic_wrap
+    |> bind_parser
+         (parse_formatted_section italic_predicate parse_paragraph_fragment italic_wrap)
   in
   (* We combine the text parser, link parser, code parser, and bold and italics parsers into a single method. The text parser will force forward progress if none of the other parsers match. *)
   let combined_parser =
