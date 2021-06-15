@@ -17,14 +17,14 @@ let rec parse (markdown : string) : t =
     | [] -> []
     | xs ->
       (match parse_fragment xs with
-       | Some (fragment, follows) -> fragment :: parse_fragments follows
-       | None ->
-         raise
-           (ParsingError
-              (sprintf
-                 "Parsing error: we did not reach the end of the file but cannot find a \
-                  matching rule at '%s'"
-                 (String.of_char_list xs))))
+      | Some (fragment, follows) -> fragment :: parse_fragments follows
+      | None ->
+        raise
+          (ParsingError
+             (sprintf
+                "Parsing error: we did not reach the end of the file but cannot find a \
+                 matching rule at '%s'"
+                (String.of_char_list xs))))
   in
   Fragments (parse_fragments (String.to_list markdown))
 ;;

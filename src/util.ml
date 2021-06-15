@@ -41,7 +41,7 @@ let ends_paragraph = function
 (* Returns a new function combining the parsing methods f_a and f_b.
  * The returned function glues f_a and f_b together by executing f_a first and executing f_b only if f_a returns None.
  * If f_a returns Some, then return the result of f_a, otherwise return the result of f_b
-*)
+ *)
 let bind_parser (f_a : parse_method) (f_b : parse_method) xs =
   match f_a xs with
   | Some x -> Some x

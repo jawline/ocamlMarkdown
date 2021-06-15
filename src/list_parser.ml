@@ -31,16 +31,16 @@ let rec parse_list_inner line_parser chr_pred xs =
   | Some xs ->
     let rest_of_line, xs = list_line_parser (skip xs) in
     (match line_parser (skip rest_of_line) with
-     | Some (paragraph, _) ->
-       let this_fragment = Fragment.Fragments (paragraph_inner paragraph) in
-       (* The list_line_parser stops at the terminating character, we now need to recurse only after the terminating character *)
-       (match ends_line xs with
-        | Some xs ->
-          let rest_of_fragments, xs = parse_list_inner line_parser chr_pred xs in
-          this_fragment :: rest_of_fragments, xs
-        (* Something went wrong, terminate the list before this list item *)
-        | _ -> [], xs)
-     | None -> [], xs)
+    | Some (paragraph, _) ->
+      let this_fragment = Fragment.Fragments (paragraph_inner paragraph) in
+      (* The list_line_parser stops at the terminating character, we now need to recurse only after the terminating character *)
+      (match ends_line xs with
+      | Some xs ->
+        let rest_of_fragments, xs = parse_list_inner line_parser chr_pred xs in
+        this_fragment :: rest_of_fragments, xs
+      (* Something went wrong, terminate the list before this list item *)
+      | _ -> [], xs)
+    | None -> [], xs)
   | None -> [], xs
 ;;
 

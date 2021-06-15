@@ -233,10 +233,10 @@ let%test "multiline_blockquote" =
   | Fragments
       [ Blockquote
           (Fragments
-             [ Heading (1, "Hello World")
-             ; Paragraph [ Text "This is still the block quotes" ]
-             ; Paragraph [ Text "This is another paragraph in it" ]
-             ])
+            [ Heading (1, "Hello World")
+            ; Paragraph [ Text "This is still the block quotes" ]
+            ; Paragraph [ Text "This is another paragraph in it" ]
+            ])
       ] -> true
   | _ -> false
 ;;

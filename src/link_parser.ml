@@ -20,8 +20,8 @@ let fetch_between start_predicate end_predicate xs =
   | Some xs ->
     let inner, xs = inside_reader xs in
     (match end_predicate xs with
-     | Some xs -> Some (inner, xs)
-     | None -> None)
+    | Some xs -> Some (inner, xs)
+    | None -> None)
   | None -> None
 ;;
 
@@ -32,12 +32,12 @@ let parse_link xs =
   match fetch_link_title xs with
   | Some (title_contents, xs) ->
     (match fetch_link_url xs with
-     | Some (url_contents, xs) ->
-       Some
-         ( Fragment.Link
-             (String.of_char_list title_contents, String.of_char_list url_contents)
-         , xs )
-     | None -> None)
+    | Some (url_contents, xs) ->
+      Some
+        ( Fragment.Link
+            (String.of_char_list title_contents, String.of_char_list url_contents)
+        , xs )
+    | None -> None)
   | None -> None
 ;;
 

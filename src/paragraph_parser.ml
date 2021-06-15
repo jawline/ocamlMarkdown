@@ -59,8 +59,8 @@ let parse_code_core predicate xs =
   | Some xs ->
     let code, rest = parse_code_inner xs in
     (match predicate rest with
-     | Some after_code -> Some (Code (String.of_char_list code), after_code)
-     | None -> None)
+    | Some after_code -> Some (Code (String.of_char_list code), after_code)
+    | None -> None)
   | None -> None
 ;;
 
@@ -99,15 +99,15 @@ let paragraph_format_parser
     parse_method
     (wrap : Fragment.t list -> Fragment.t)
   = function
-    | xs ->
-      (match start_predicate xs with
-       | Some beginning_of_content ->
-         (* Check if we can parse the content, if that does not fail then wrap it in Fragment.t using the wrap predicate *)
-         let content, rest = parse_method beginning_of_content in
-         (match end_predicate rest with
-          | Some rest -> Some (wrap content, rest)
-          | None -> None)
-       | None -> None)
+  | xs ->
+    (match start_predicate xs with
+    | Some beginning_of_content ->
+      (* Check if we can parse the content, if that does not fail then wrap it in Fragment.t using the wrap predicate *)
+      let content, rest = parse_method beginning_of_content in
+      (match end_predicate rest with
+      | Some rest -> Some (wrap content, rest)
+      | None -> None)
+    | None -> None)
 ;;
 
 (* parse_formatted_section forms the foundation of the special text parsers (Like Bold, Italic) where the paragraph parser needs to recurse on itself but with an additional terminating predicate (I.e, now terminate at __ rather than just \n\n). We split this logic out into a series of functions with their recursors or continuations as methods to reduce repeated code.
@@ -143,7 +143,7 @@ let rec parse_paragraph_fragment xs =
   (* We do the same for italics, which are begun by a single * or _.
    * Bold takes precedence (so ** will begin a bold, not open and close an italic)
    * If three control characters appear in a row, the inner content will be both bold and italic, with bold wrapping the italic. For example ***Hello*** or __*Hello*__.
-  *)
+   *)
   let italic_wrap = function
     | xs -> Italic (Fragments xs)
   in
