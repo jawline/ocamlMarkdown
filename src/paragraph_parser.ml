@@ -66,7 +66,9 @@ let parse_code_core predicate xs =
 
 (* Generate a parsing method for each of the three code start predicates. They are added in reverse order so the longer options take precedence, otherwise ```Hello``` would evaluate to `` `Hello` ``*)
 let code_parser =
-  parse_code_core code_predicate |> bind_parser (parse_code_core code_predicate_double) |> bind_parser (parse_code_core code_predicate_triple)
+  parse_code_core code_predicate
+  |> bind_parser (parse_code_core code_predicate_double)
+  |> bind_parser (parse_code_core code_predicate_triple)
 ;;
 
 let rec parse_paragraph_contents ends_predicate fragment_parser xs =
@@ -151,12 +153,14 @@ let rec parse_paragraph_fragment xs =
          parse_paragraph_fragment
          italic_wrap)
   in
-  (* We combine the bold and italics parsers with bold taking precedence *)
-  let special_text_parser = bind_parser assembled_bold_parser assembled_italic_parser in
-  let special_text_parser = bind_parser special_text_parser code_parser in
-  let special_text_parser = bind_parser special_text_parser Link_parser.parse in
-  (* Finally this is combined with the fallback text parser that forces forward progress (if no rule can be satisfied, we assume it is just normal text and consume at least one character as text *)
-  let combined_parser = bind_parser special_text_parser parse_text in
+  (* We combine the text parser, link parser, code parser, and bold and italics parsers into a single method. The text parser will force forward progress if none of the other parsers match. *)
+  let combined_parser =
+    parse_text
+    |> bind_parser Link_parser.parse
+    |> bind_parser code_parser
+    |> bind_parser assembled_italic_parser
+    |> bind_parser assembled_bold_parser
+  in
   combined_parser xs
 ;;
 
