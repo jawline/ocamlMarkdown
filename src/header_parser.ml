@@ -54,5 +54,9 @@ let parse_header_two_lines chr depth xs =
 
 let two_line_parser_equals = parse_header_two_lines '=' 1
 let two_line_parser_dash = parse_header_two_lines '-' 2
-let two_line_parser = bind_parser two_line_parser_equals two_line_parser_dash
-let parse = bind_parser parse_header_starting_with_hash two_line_parser
+
+let parse =
+  two_line_parser_dash
+  |> bind_parser two_line_parser_equals
+  |> bind_parser parse_header_starting_with_hash
+;;
