@@ -43,6 +43,12 @@ let%test "basic_text" =
   if String.( = ) output "<p>hello</p>\n" then true else raise (ToHtmlTestingError output)
 ;;
 
+let%test "basic_texts_split_over_two_lines" =
+  let parse = Parse.parse in
+  let output = to_html (parse "hello\nworld") in
+  if String.( = ) output "<p>hello world</p>\n" then true else raise (ToHtmlTestingError output)
+;;
+
 let%test "bold_text" =
   let parse = Parse.parse in
   let output = to_html (parse "he**ll**o") in
