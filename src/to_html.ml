@@ -26,8 +26,8 @@ let rec to_html (markdown : Fragment.t) : string =
   | Paragraph parts ->
     sprintf "<p>%s</p>\n" (String.strip (to_html_list_of_fragments parts))
   | Code (code_type, code_str) -> (match code_type with
-    | Inline -> sprintf "<code>%s</code>" code_str
-    | Block -> sprintf "<pre><code>%s</code></pre>" code_str
+    | Inline -> sprintf "<code>%s</code>" (String.strip code_str)
+    | Block -> sprintf "<pre><code>%s</code></pre>" (String.strip code_str)
   )
   | Text text -> text
   | List (list_type, list_items) -> to_html_list list_type list_items
