@@ -53,22 +53,22 @@ let parse_text xs =
 ;;
 
 (* this reads out a series of characters between ` `` and ``` opening blocks as code segments *)
-let parse_code_core predicate xs =
+let parse_code_core code_type predicate xs =
   let parse_code_inner = parse_characters_until (fun xs -> is_some (predicate xs)) in
   match predicate xs with
   | Some xs ->
     let code, rest = parse_code_inner xs in
     (match predicate rest with
-    | Some after_code -> Some (Code (String.of_char_list code), after_code)
+    | Some after_code -> Some (Code (code_type, String.of_char_list code), after_code)
     | None -> None)
   | None -> None
 ;;
 
 (* Generate a parsing method for each of the three code start predicates. They are added in reverse order so the longer options take precedence, otherwise ```Hello``` would evaluate to `` `Hello` ``*)
 let code_parser =
-  parse_code_core code_predicate
-  |> bind_parser (parse_code_core code_predicate_double)
-  |> bind_parser (parse_code_core code_predicate_triple)
+  parse_code_core Inline code_predicate
+  |> bind_parser (parse_code_core Inline code_predicate_double)
+  |> bind_parser (parse_code_core Block code_predicate_triple)
 ;;
 
 let rec parse_paragraph_contents ends_predicate fragment_parser xs =

@@ -3,10 +3,15 @@ type list_type =
   | Unordered
 [@@deriving show]
 
+type code_type =
+  | Inline
+  | Block
+[@@deriving show]
+
 type t =
   | Fragments of t list
   | Paragraph of t list
-  | Code of string
+  | Code of (code_type * string)
   | Text of string
   | List of (list_type * t list)
   | Bold of t

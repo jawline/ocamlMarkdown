@@ -116,14 +116,21 @@ let%test "header" =
 let%test "simple_code_and_text" =
   let parsed_code = parse "Goodbye ``Hello``" in
   match parsed_code with
-  | Fragments [ Paragraph [ Text "Goodbye "; Code "Hello" ] ] -> true
+  | Fragments [ Paragraph [ Text "Goodbye "; Code (Inline, "Hello") ] ] -> true
   | _ -> false
 ;;
 
 let%test "simple_code" =
   let parsed_code = parse "``Hello``" in
   match parsed_code with
-  | Fragments [ Paragraph [ Code "Hello" ] ] -> true
+  | Fragments [ Paragraph [ Code (Inline, "Hello") ] ] -> true
+  | _ -> false
+;;
+
+let%test "block_of_code" =
+  let parsed_code = parse "```Hello```" in
+  match parsed_code with
+  | Fragments [ Paragraph [ Code (Block, "Hello") ] ] -> true
   | _ -> false
 ;;
 
