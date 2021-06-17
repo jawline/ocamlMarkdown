@@ -61,7 +61,7 @@ let rec to_html (markdown : Fragment.t) : string =
   | Image (dimension, alt_text, url) ->
     let dimension_string =
       match dimension with
-      | OriginalDimension -> "width=\"100%\" "
+      | OriginalDimension -> ""
       | Width width -> sprintf "width=\"%s\" " width
       | WidthHeight (width, height) -> sprintf "width=\"%s\" height=\"%s\" " width height
     in
@@ -139,7 +139,7 @@ let%test "two_paragraphs" =
 let%test "image render" =
   let parse = Parse.parse in
   let output = to_html (parse "![desc](test.png)") in
-  if String.( = ) output "<p><img width=\"100%\" alt=\"desc\" src=\"test.png\" /></p>\n"
+  if String.( = ) output "<p><img alt=\"desc\" src=\"test.png\" /></p>\n"
   then true
   else raise (ToHtmlTestingError output)
 ;;
