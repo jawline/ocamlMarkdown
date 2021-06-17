@@ -58,14 +58,14 @@ let rec to_html (markdown : Fragment.t) : string =
   | List (list_type, list_items) -> to_html_list list_type list_items
   | Bold t -> sprintf "<b>%s</b>" (to_html t)
   | Italic t -> sprintf "<i>%s</i>" (to_html t)
-  | Image (dimension, alt_text, url) -> (
-    let dimension_string = match dimension with
-    | OriginalDimension -> ""
-    | Width width -> sprintf "width=\"%i\" " width
-    | WidthHeight (width, height) -> sprintf "width=\"%i\" height=\"%i\" " width height
+  | Image (dimension, alt_text, url) ->
+    let dimension_string =
+      match dimension with
+      | OriginalDimension -> ""
+      | Width width -> sprintf "width=\"%s\" " width
+      | WidthHeight (width, height) -> sprintf "width=\"%s\" height=\"%s\" " width height
     in
     sprintf "<img %salt=\"%s\" src=\"%s\" />" dimension_string alt_text url
-  )
   | Heading (depth, title) -> sprintf "<h%i>%s</h%i>\n" depth title depth
   | Link (title, url) -> sprintf "<a href=\"%s\">%s</a>" url title
   | Blockquote t -> sprintf "<blockquote>%s</blockquote>\n" (to_html t)
@@ -151,6 +151,5 @@ let%test "code_escape" =
   then true
   else raise (ToHtmlTestingError output)
 ;;
-
 
 (* TODO: to_html tests are insufficient, missing important cases like Code*)

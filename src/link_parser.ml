@@ -41,12 +41,29 @@ let parse_link xs =
   | None -> None
 ;;
 
+let convert_to_image alt_text url_section =
+  match String.split_on_chars url_section ~on:[ ' ' ] with
+  | url_section :: width_part :: _ ->
+    let dim =
+      if String.is_prefix width_part ~prefix:"="
+      then (
+        match String.split_on_chars ~on:[ 'x' ] (String.drop_prefix width_part 1) with
+        | [ width; height ] ->
+          if String.length height = 0 then Fragment.Width width else Fragment.WidthHeight (width, height)
+        | _ -> Fragment.OriginalDimension)
+      else Fragment.OriginalDimension
+    in
+    Fragment.Image (dim, alt_text, url_section)
+  | _ -> Fragment.Image (OriginalDimension, alt_text, url_section)
+;;
+
 (* Images have almost identical schema to links so we hijack the link parser and convert it to an image fragment instead *)
 let parse_image xs =
   match xs with
   | '!' :: xs ->
     (match parse_link xs with
-    | Some (Fragment.Link (alt_text, url), xs) -> Some (Fragment.Image (OriginalDimension, alt_text, url), xs)
+    | Some (Fragment.Link (alt_text, url), xs) ->
+      Some (convert_to_image alt_text url, xs)
     | _ -> None)
   | _ -> None
 ;;

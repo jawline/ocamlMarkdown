@@ -10,8 +10,8 @@ type code_type =
 
 type image_dimensions =
   | OriginalDimension
-  | Width of int
-  | WidthHeight of (int * int)
+  | Width of string
+  | WidthHeight of (string * string)
 [@@deriving show]
 
 type t =
