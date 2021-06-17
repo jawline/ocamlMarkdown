@@ -8,6 +8,12 @@ type code_type =
   | Block
 [@@deriving show]
 
+type image_dimensions =
+  | OriginalDimension
+  | Width of int
+  | WidthHeight of (int * int)
+[@@deriving show]
+
 type t =
   | Fragments of t list
   | Paragraph of t list
@@ -18,7 +24,7 @@ type t =
   | Italic of t
   | Heading of (int * string)
   | Link of (string * string)
-  | Image of (string * string)
+  | Image of (image_dimensions * string * string)
   | Blockquote of t
   | HorizontalRule
 [@@deriving show]

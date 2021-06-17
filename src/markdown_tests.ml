@@ -253,7 +253,7 @@ let%test "multiline_blockquote" =
 let%test "simple_image" =
   let image_md = parse "![Description](image link)" in
   match image_md with
-  | Fragments [ Paragraph [ Image ("Description", "image link") ] ] -> true
+  | Fragments [ Paragraph [ Image (OriginalDimension, "Description", "image link") ] ] -> true
   | _ -> false
 ;;
 

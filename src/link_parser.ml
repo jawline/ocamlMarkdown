@@ -46,7 +46,7 @@ let parse_image xs =
   match xs with
   | '!' :: xs ->
     (match parse_link xs with
-    | Some (Fragment.Link (alt_text, url), xs) -> Some (Fragment.Image (alt_text, url), xs)
+    | Some (Fragment.Link (alt_text, url), xs) -> Some (Fragment.Image (OriginalDimension, alt_text, url), xs)
     | _ -> None)
   | _ -> None
 ;;
