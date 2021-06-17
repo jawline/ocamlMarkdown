@@ -18,6 +18,7 @@ type t =
   | Italic of t
   | Heading of (int * string)
   | Link of (string * string)
+  | Image of (string * string)
   | Blockquote of t
   | HorizontalRule
 [@@deriving show]

@@ -41,4 +41,14 @@ let parse_link xs =
   | None -> None
 ;;
 
-let parse = parse_link
+(* Images have almost identical schema to links so we hijack the link parser and convert it to an image fragment instead *)
+let parse_image xs =
+  match xs with
+  | '!' :: xs -> (match parse_link xs with
+    | Some ( Fragment.Link (alt_text, url), xs ) -> Some (Fragment.Image (alt_text, url), xs)
+    | _ -> None
+  )
+  | _ -> None
+;;
+
+let parse = parse_image |> bind_parser parse_link

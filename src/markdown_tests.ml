@@ -250,6 +250,13 @@ let%test "multiline_blockquote" =
   | _ -> false
 ;;
 
+let%test "simple_image" =
+  let image_md = parse "![Description](image link)" in
+  match image_md with
+  | Fragments [ Paragraph [ Image ("Description", "image link") ] ] -> true
+  | _ -> false
+;;
+
 let%test "link_in_text" =
   let link_block = parse "Hello, I'm contacting you from [Website](http://url.com)" in
   match link_block with

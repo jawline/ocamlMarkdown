@@ -33,6 +33,7 @@ let rec to_html (markdown : Fragment.t) : string =
   | List (list_type, list_items) -> to_html_list list_type list_items
   | Bold t -> sprintf "<b>%s</b>" (to_html t)
   | Italic t -> sprintf "<i>%s</i>" (to_html t)
+  | Image (alt_text, url) -> sprintf "<img alt=\"%s\" src=\"%s\" />" alt_text url
   | Heading (depth, title) -> sprintf "<h%i>%s</h%i>\n" depth title depth
   | Link (title, url) -> sprintf "<a href=\"%s\">%s</a>" url title
   | Blockquote t -> sprintf "<blockquote>%s</blockquote>\n" (to_html t)
@@ -101,6 +102,12 @@ let%test "two_paragraphs" =
   if String.( = ) output "<h1>Heading</h1>\n<p>Hello World</p>\n<p>Goodbye World</p>\n"
   then true
   else raise (ToHtmlTestingError output)
+;;
+
+let%test "image_Render" =
+  let parse = Parse.parse in
+  let output = to_html (parse "![desc](test.png)") in
+  if String.(=) output "<p><img alt=\"desc\" src=\"test.png\" /></p>\n" then true else raise (ToHtmlTestingError output)
 ;;
 
 (* TODO: to_html tests are insufficient, missing important cases like Code*)
