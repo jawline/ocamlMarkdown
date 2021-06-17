@@ -49,7 +49,9 @@ let convert_to_image alt_text url_section =
       then (
         match String.split_on_chars ~on:[ 'x' ] (String.drop_prefix width_part 1) with
         | [ width; height ] ->
-          if String.length height = 0 then Fragment.Width width else Fragment.WidthHeight (width, height)
+          if String.length height = 0
+          then Fragment.Width width
+          else Fragment.WidthHeight (width, height)
         | _ -> Fragment.OriginalDimension)
       else Fragment.OriginalDimension
     in
@@ -62,8 +64,7 @@ let parse_image xs =
   match xs with
   | '!' :: xs ->
     (match parse_link xs with
-    | Some (Fragment.Link (alt_text, url), xs) ->
-      Some (convert_to_image alt_text url, xs)
+    | Some (Fragment.Link (alt_text, url), xs) -> Some (convert_to_image alt_text url, xs)
     | _ -> None)
   | _ -> None
 ;;

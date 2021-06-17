@@ -261,7 +261,15 @@ let%test "simple_image" =
 let%test "image with width" =
   let image_md = parse "![Description](image.png =500x)" in
   match image_md with
-  | Fragments [ Paragraph [ Image (Width "500", "Description", "image.png") ] ] ->
+  | Fragments [ Paragraph [ Image (Width "500", "Description", "image.png") ] ] -> true
+  | _ -> false
+;;
+
+let%test "image with width and height" =
+  let image_md = parse "![Description](image.png =500x400)" in
+  match image_md with
+  | Fragments
+      [ Paragraph [ Image (WidthHeight ("500", "400"), "Description", "image.png") ] ] ->
     true
   | _ -> false
 ;;
