@@ -1,7 +1,7 @@
 open Core
 open Fragment
 
-let html_encode_char c = sprintf "&#%04i" (Char.to_int c)
+let html_encode_char c = sprintf "&#%04i;" (Char.to_int c)
 
 (* TODO: This won't work if there's a unicode sequences that happens to collide with these matches in the HTML fragment. *)
 let needs_escape c =
@@ -129,12 +129,21 @@ let%test "two_paragraphs" =
   else raise (ToHtmlTestingError output)
 ;;
 
-let%test "image_Render" =
+let%test "image render" =
   let parse = Parse.parse in
   let output = to_html (parse "![desc](test.png)") in
   if String.( = ) output "<p><img alt=\"desc\" src=\"test.png\" /></p>\n"
   then true
   else raise (ToHtmlTestingError output)
 ;;
+
+let%test "code_escape" =
+  let parse = Parse.parse in
+  let output = to_html (parse "``<Hello>``") in
+  if String.( = ) output "<p><code>&#0060;Hello&#0062;</code></p>\n"
+  then true
+  else raise (ToHtmlTestingError output)
+;;
+
 
 (* TODO: to_html tests are insufficient, missing important cases like Code*)
