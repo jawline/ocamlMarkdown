@@ -1,6 +1,30 @@
 open Core
 open Fragment
 
+let html_encode_char c = sprintf "&#%04i" (Char.to_int c)
+
+(* TODO: This won't work if there's a unicode sequences that happens to collide with these matches in the HTML fragment. *)
+let needs_escape c =
+  match c with
+  | c when Char.to_int c > 0x20 && Char.to_int c <= 0x2F -> true
+  | c when Char.to_int c >= 0x3A && Char.to_int c <= 0x40 -> true
+  | c when Char.to_int c >= 0x5B && Char.to_int c <= 0x60 -> true
+  | c when Char.to_int c > 0x7B && Char.to_int c <= 0x7E -> true
+  | _ -> false
+;;
+
+let html_encode_string s =
+  let rec encode_list = function
+    | [] -> []
+    | x :: xs when needs_escape x ->
+      let encoded = html_encode_char x in
+      let encoded = String.to_list encoded in
+      List.join [ encoded; encode_list xs ]
+    | x :: xs -> x :: encode_list xs
+  in
+  String.of_char_list (encode_list (String.to_list s))
+;;
+
 let list_order_as_html = function
   | Unordered -> "ul"
   | Ordered -> "ol"
@@ -27,8 +51,9 @@ let rec to_html (markdown : Fragment.t) : string =
     sprintf "<p>%s</p>\n" (String.strip (to_html_list_of_fragments parts))
   | Code (code_type, code_str) ->
     (match code_type with
-    | Inline -> sprintf "<code>%s</code>" (String.strip code_str)
-    | Block -> sprintf "<pre><code>%s</code></pre>" (String.strip code_str))
+    | Inline -> sprintf "<code>%s</code>" (html_encode_string (String.strip code_str))
+    | Block ->
+      sprintf "<pre><code>%s</code></pre>" (html_encode_string (String.strip code_str)))
   | Text text -> text
   | List (list_type, list_items) -> to_html_list list_type list_items
   | Bold t -> sprintf "<b>%s</b>" (to_html t)
@@ -107,7 +132,9 @@ let%test "two_paragraphs" =
 let%test "image_Render" =
   let parse = Parse.parse in
   let output = to_html (parse "![desc](test.png)") in
-  if String.(=) output "<p><img alt=\"desc\" src=\"test.png\" /></p>\n" then true else raise (ToHtmlTestingError output)
+  if String.( = ) output "<p><img alt=\"desc\" src=\"test.png\" /></p>\n"
+  then true
+  else raise (ToHtmlTestingError output)
 ;;
 
 (* TODO: to_html tests are insufficient, missing important cases like Code*)
