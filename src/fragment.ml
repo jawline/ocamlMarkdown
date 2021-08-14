@@ -1,18 +1,20 @@
+open Core
+
 type list_type =
   | Ordered
   | Unordered
-[@@deriving show]
+[@@deriving show, sexp]
 
 type code_type =
   | Inline
   | Block
-[@@deriving show]
+[@@deriving show, sexp]
 
 type image_dimensions =
   | OriginalDimension
   | Width of string
   | WidthHeight of (string * string)
-[@@deriving show]
+[@@deriving show, sexp]
 
 type t =
   | Fragments of t list
@@ -27,4 +29,4 @@ type t =
   | Image of (image_dimensions * string * string)
   | Blockquote of t
   | HorizontalRule
-[@@deriving show]
+[@@deriving show, sexp]

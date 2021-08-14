@@ -4,4 +4,4 @@
  (libraries core)
  (inline_tests)
  (preprocess
-  (pps ppx_deriving.show ppx_deriving.ord ppx_inline_test)))
+  (pps ppx_jane ppx_deriving.show ppx_deriving.ord ppx_inline_test)))
