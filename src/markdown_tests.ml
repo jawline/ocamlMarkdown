@@ -19,11 +19,6 @@ let test_two_paragraphs =
    This is paragraph two. Ditto."
 ;;
 
-let test_two_paragraphs_with_bold =
-  "This is paragraph one. It's a **great** paragraph. Many things happen.\n\n\
-   This is paragraph two. Ditto."
-;;
-
 let multiline_block_quotes =
   "> # Hello World\n\
    > This is still the block quotes\n\
@@ -64,7 +59,12 @@ let%test "two_paragraphs" =
 ;;
 
 let%test "two_paragraphs_bold" =
-  match parse test_two_paragraphs_with_bold with
+  let test_two_paragraphs_with_bold =
+    "This is paragraph one. It's a **great** paragraph. Many things happen.\n\n\
+     This is paragraph two. Ditto."
+  in
+  let parsed = parse test_two_paragraphs_with_bold in
+  match parsed with
   | Fragments
       [ Paragraph
           [ Text "This is paragraph one. It's a "
@@ -255,6 +255,20 @@ let%test "simple_image" =
   match image_md with
   | Fragments [ Paragraph [ Image (OriginalDimension, "Description", "image.png") ] ] ->
     true
+  | _ -> false
+;;
+
+let%test "stacked_images" =
+  let image_md = parse "![Description](image.png)\n![Other](other.png)\n" in
+  match image_md with
+  | Fragments
+      [ Paragraph
+          [ Image (OriginalDimension, "Description", "image.png")
+          ; Text " "
+          ; Image (OriginalDimension, "Other", "other.png")
+          ; Text " "
+          ]
+      ] -> true
   | _ -> false
 ;;
 

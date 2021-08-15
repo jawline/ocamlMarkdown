@@ -12,7 +12,8 @@ let starts_link_title = is_character '['
 let ends_link_title = is_character ']'
 let starts_link_url = is_character '('
 let ends_link_url = is_character ')'
-let starts_link xs = starts_link_title xs
+let starts_image_title = is_character '!'
+let starts_link xs = Option.first_some (starts_link_title xs) (starts_image_title xs)
 
 let fetch_between start_predicate end_predicate xs =
   let inside_reader = parse_characters_until (fun xs -> is_some (end_predicate xs)) in
