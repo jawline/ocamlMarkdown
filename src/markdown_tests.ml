@@ -29,7 +29,6 @@ let multiline_block_quotes =
 
 let test_multiline_header = "Hello World\n===========\nWhat's up?"
 let test_deeper_multiline_header = "Hello World\n---\nWhat's up?"
-let test_basic_list = "\n- Hello\n- World\n- What\n"
 
 let test_basic_ordered_list =
   "1. Hello world\n2. What's up?\n3. I don't know\n3. This is still valid"
@@ -77,10 +76,12 @@ let%test "two_paragraphs_bold" =
 ;;
 
 let%test "basic_list" =
+  let test_basic_list = "Test\n- Hello\n- World\n- What\n" in
   let parsed_list = parse test_basic_list in
   match parsed_list with
   | Fragments
-      [ List
+      [ Paragraph [ Text "Test" ]
+      ; List
           ( Unordered
           , [ Fragments [ Text "Hello" ]
             ; Fragments [ Text "World" ]

@@ -61,10 +61,19 @@ let strip chr xs = strip_end chr (strip_beginning chr xs)
 (* Replace newlines with spaces and then remove duplicate spaces in a paragraph then remove all the spaces toward the beginning and end of the input *)
 let sanitize_paragraph xs = remove_duplicate_spaces (replace_newlines_with_spaces xs)
 
+(* Lists are started on * or - or a 0-9 digit. *)
+let starts_list = function
+ | '-' :: ' ' :: _ -> true
+ | '*' :: ' ' :: _ -> true
+ | '0' .. '9' :: '.' :: ' ' :: _ -> true
+ | _ -> false
+;;
+
 (* Returns true of the characters at the start of the list end the current paragraph. This happens either when we reach the end of the document or there are two newlines in a row. *)
 let ends_paragraph = function
   (* TODO: skip the whitespace between the first and second newline *)
   | [] | '\n' :: '\n' :: _ -> true
+  | '\n' :: xs when starts_list xs -> true
   | _ -> false
 ;;
 

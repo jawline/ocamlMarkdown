@@ -73,17 +73,17 @@ let code_parser =
 
 let rec parse_paragraph_contents ends_predicate fragment_parser xs =
   let recurse new_thing follows =
-    let rest_of_paragraph, follows =
-      parse_paragraph_contents ends_predicate fragment_parser follows
-    in
-    new_thing :: rest_of_paragraph, follows
+    if ends_predicate follows
+    then [ new_thing ], follows
+    else (
+      let rest_of_paragraph, follows =
+        parse_paragraph_contents ends_predicate fragment_parser follows
+      in
+      new_thing :: rest_of_paragraph, follows)
   in
-  if ends_predicate xs
-  then [], xs
-  else (
-    match fragment_parser xs with
-    | Some (fragment, follows) -> recurse fragment follows
-    | None -> [], xs)
+  match fragment_parser xs with
+  | Some (fragment, follows) -> recurse fragment follows
+  | None -> [], xs
 ;;
 
 (*
