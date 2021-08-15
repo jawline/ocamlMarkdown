@@ -63,10 +63,10 @@ let sanitize_paragraph xs = remove_duplicate_spaces (replace_newlines_with_space
 
 (* Lists are started on * or - or a 0-9 digit. *)
 let starts_list = function
- | '-' :: ' ' :: _ -> true
- | '*' :: ' ' :: _ -> true
- | '0' .. '9' :: '.' :: ' ' :: _ -> true
- | _ -> false
+  | '-' :: ' ' :: _ -> true
+  | '*' :: ' ' :: _ -> true
+  | '0' .. '9' :: '.' :: ' ' :: _ -> true
+  | _ -> false
 ;;
 
 (* Returns true of the characters at the start of the list end the current paragraph. This happens either when we reach the end of the document or there are two newlines in a row. *)
