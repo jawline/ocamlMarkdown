@@ -67,8 +67,8 @@ let rec to_html (markdown : Fragment.t) : string =
         sprintf "width=\"%s\" height=\"%s\" " width height
     in
     sprintf "<img %salt=\"%s\" src=\"%s\" />" dimension_string description path
-  | Heading (depth, title) -> sprintf "<h%i>%s</h%i>\n" depth title depth
-  | Link (title, url) -> sprintf "<a href=\"%s\">%s</a>" url title
+  | Heading { depth; text } -> sprintf "<h%i>%s</h%i>\n" depth text depth
+  | Link { description; path } -> sprintf "<a href=\"%s\">%s</a>" description path
   | Blockquote t -> sprintf "<blockquote>%s</blockquote>\n" (to_html t)
   | HorizontalRule -> sprintf "<hr/>\n"
 ;;

@@ -23,7 +23,7 @@ let parse_header_starting_with_hash xs =
   | '#' :: _ ->
     let depth, rest = parse_header_count_depth xs in
     let text_list, follows = parse_header_title_text (skip rest) in
-    Some (Heading (depth, String.of_char_list text_list), follows)
+    Some (Heading { depth; text = String.of_char_list text_list }, follows)
   | _ -> None
 ;;
 
@@ -48,7 +48,7 @@ let parse_header_two_lines chr depth xs =
   let first_line, xs = read_entire_line xs in
   match is_header_line 0 chr xs with
   | Some (count, follows) when count > 1 ->
-    Some (Heading (depth, String.of_char_list first_line), follows)
+    Some (Heading { depth; text = String.of_char_list first_line }, follows)
   | _ -> None
 ;;
 

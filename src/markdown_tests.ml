@@ -113,8 +113,10 @@ let%test "basic_ordered_list" =
 let%test "header" =
   let parsed_header = parse test_with_header in
   match parsed_header with
-  | Fragments [ Heading (1, "Hello World"); Paragraph [ Text "This is a paragraph" ] ] ->
-    true
+  | Fragments
+      [ Heading { depth = 1; text = "Hello World" }
+      ; Paragraph [ Text "This is a paragraph" ]
+      ] -> true
   | _ -> false
 ;;
 
@@ -143,22 +145,28 @@ let%test "block_of_code" =
 let%test "deeper_header" =
   let parsed_header = parse test_with_deeper_header in
   match parsed_header with
-  | Fragments [ Heading (3, "Hello World"); Paragraph [ Text "This is a paragraph" ] ] ->
-    true
+  | Fragments
+      [ Heading { depth = 3; text = "Hello World" }
+      ; Paragraph [ Text "This is a paragraph" ]
+      ] -> true
   | _ -> false
 ;;
 
 let%test "mutliline_header" =
   let header = parse test_multiline_header in
   match header with
-  | Fragments [ Heading (1, "Hello World"); Paragraph [ Text "What's up?" ] ] -> true
+  | Fragments
+      [ Heading { depth = 1; text = "Hello World" }; Paragraph [ Text "What's up?" ] ] ->
+    true
   | _ -> false
 ;;
 
 let%test "deeper_mutliline_header" =
   let header = parse test_deeper_multiline_header in
   match header with
-  | Fragments [ Heading (2, "Hello World"); Paragraph [ Text "What's up?" ] ] -> true
+  | Fragments
+      [ Heading { depth = 2; text = "Hello World" }; Paragraph [ Text "What's up?" ] ] ->
+    true
   | _ -> false
 ;;
 
@@ -230,7 +238,8 @@ let%test "not_horizontal_rule" =
 let%test "link" =
   let link_block = parse "[Website](http://url.com)" in
   match link_block with
-  | Fragments [ Paragraph [ Link ("Website", "http://url.com") ] ] -> true
+  | Fragments [ Paragraph [ Link { description = "Website"; path = "http://url.com" } ] ]
+    -> true
   | _ -> false
 ;;
 
@@ -248,7 +257,7 @@ let%test "multiline_blockquote" =
   | Fragments
       [ Blockquote
           (Fragments
-            [ Heading (1, "Hello World")
+            [ Heading { depth = 1; text = "Hello World" }
             ; Paragraph [ Text "This is still the block quotes" ]
             ; Paragraph [ Text "This is another paragraph in it " ]
             ])
@@ -328,7 +337,9 @@ let%test "link_in_text" =
   match link_block with
   | Fragments
       [ Paragraph
-          [ Text "Hello, I'm contacting you from "; Link ("Website", "http://url.com") ]
+          [ Text "Hello, I'm contacting you from "
+          ; Link { description = "Website"; path = "http://url.com" }
+          ]
       ] -> true
   | _ -> false
 ;;

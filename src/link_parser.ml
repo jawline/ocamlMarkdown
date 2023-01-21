@@ -36,7 +36,9 @@ let parse_link xs =
      | Some (url_contents, xs) ->
        Some
          ( Fragment.Link
-             (String.of_char_list title_contents, String.of_char_list url_contents)
+             { description = String.of_char_list title_contents
+             ; path = String.of_char_list url_contents
+             }
          , xs )
      | None -> None)
   | None -> None
@@ -66,7 +68,8 @@ let parse_image xs =
   match xs with
   | '!' :: xs ->
     (match parse_link xs with
-     | Some (Fragment.Link (alt_text, url), xs) -> Some (convert_to_image alt_text url, xs)
+     | Some (Fragment.Link { description; path }, xs) ->
+       Some (convert_to_image description path, xs)
      | _ -> None)
   | _ -> None
 ;;

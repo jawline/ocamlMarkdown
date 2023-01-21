@@ -36,8 +36,14 @@ type t =
       }
   | Bold of t
   | Italic of t
-  | Heading of (int * string)
-  | Link of (string * string)
+  | Heading of
+      { depth : int
+      ; text : string
+      }
+  | Link of
+      { description : string
+      ; path : string
+      }
   | Image of
       { dimensions : Image_dimensions.t
       ; description : string
