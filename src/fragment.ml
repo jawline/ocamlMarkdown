@@ -4,14 +4,14 @@ module List_style = struct
   type t =
     | Ordered
     | Unordered
-  [@@deriving show, sexp]
+  [@@deriving show, sexp, equal, compare]
 end
 
 module Code_style = struct
   type t =
     | Inline
     | Block
-  [@@deriving show, sexp]
+  [@@deriving show, sexp, equal, compare]
 end
 
 module Image_dimensions = struct
@@ -19,7 +19,7 @@ module Image_dimensions = struct
     | Original_dimensions
     | Width of string
     | Width_and_height of (string * string)
-  [@@deriving show, sexp]
+  [@@deriving show, sexp, equal, compare]
 end
 
 type t =
@@ -51,4 +51,4 @@ type t =
       }
   | Blockquote of t
   | HorizontalRule
-[@@deriving show, sexp]
+[@@deriving show, sexp, equal, compare]

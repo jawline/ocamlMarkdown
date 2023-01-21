@@ -19,14 +19,6 @@ let test_two_paragraphs =
    This is paragraph two. Ditto."
 ;;
 
-let multiline_block_quotes =
-  "> # Hello World\n\
-   > This is still the block quotes\n\
-   >\n\
-   >\n\
-   > This is another paragraph in it"
-;;
-
 let test_multiline_header = "Hello World\n===========\nWhat's up?"
 let test_deeper_multiline_header = "Hello World\n---\nWhat's up?"
 
@@ -34,11 +26,14 @@ let test_basic_ordered_list =
   "1. Hello world\n2. What's up?\n3. I don't know\n3. This is still valid"
 ;;
 
-let test_horizontal_rules =
-  "\nThis is some text\n\n---------------------\n\nThis is other text"
-;;
-
 let test_not_hr = "--"
+
+let test_fn markdown fragment =
+  let markdown_fragment = parse markdown in
+  if Fragment.equal markdown_fragment fragment
+  then true
+  else (print_s [%message "" ~_:(markdown_fragment : Fragment.t)]; false)
+;;
 
 let%test "test_paragraph" =
   match parse test_with_paragraph_and_eol with
@@ -48,7 +43,11 @@ let%test "test_paragraph" =
 ;;
 
 let%test "two_paragraphs" =
-  match parse test_two_paragraphs with
+  match
+    parse
+      "This is paragraph one. It's a great paragraph. Many things happen.\n\n\
+       This is paragraph two. Ditto."
+  with
   | Fragments
       [ Paragraph
           [ Text "This is paragraph one. It's a great paragraph. Many things happen." ]
@@ -218,7 +217,9 @@ let%test "bold_within_word" =
 ;;
 
 let%test "horizontal_rule" =
-  let hr_block = parse test_horizontal_rules in
+  let hr_block =
+    parse "\nThis is some text\n\n---------------------\n\nThis is other text"
+  in
   match hr_block with
   | Fragments
       [ Paragraph [ Text "This is some text" ]
@@ -244,25 +245,26 @@ let%test "link" =
 ;;
 
 let%test "blockquote" =
-  let block_quote = parse "> Hello World" in
-  match block_quote with
-  (* We expect a trailing space since newlines get substituted for spaces (and stripped in to_html) *)
-  | Fragments [ Blockquote (Fragments [ Paragraph [ Text "Hello World " ] ]) ] -> true
-  | _ -> false
+  test_fn "> Hello World" 
+  (Fragments [ Blockquote (Fragments [ Paragraph [ Text "Hello World" ] ]) ]) 
 ;;
 
 let%test "multiline_blockquote" =
-  let block_quote = parse multiline_block_quotes in
-  match block_quote with
-  | Fragments
+  let multiline_block_quotes =
+    "> # Hello World\n\
+     > This is still the block quotes\n\
+     >\n\
+     >\n\
+     > This is another paragraph in it"
+  in
+  test_fn multiline_block_quotes ( Fragments
       [ Blockquote
           (Fragments
             [ Heading { depth = 1; text = "Hello World" }
             ; Paragraph [ Text "This is still the block quotes" ]
-            ; Paragraph [ Text "This is another paragraph in it " ]
+            ; Paragraph [ Text "This is another paragraph in it" ]
             ])
-      ] -> true
-  | _ -> false
+      ])
 ;;
 
 let%test "simple_image" =
@@ -281,9 +283,8 @@ let%test "simple_image" =
 ;;
 
 let%test "stacked_images" =
-  let image_md = parse "![Description](image.png)\n![Other](other.png)\n" in
-  match image_md with
-  | Fragments
+  test_fn "![Description](image.png)\n![Other](other.png)\n" 
+   (Fragments
       [ Paragraph
           [ Image
               { dimensions = Original_dimensions
@@ -296,10 +297,8 @@ let%test "stacked_images" =
               ; description = "Other"
               ; path = "other.png"
               }
-          ; Text " "
           ]
-      ] -> true
-  | _ -> false
+      ])
 ;;
 
 let%test "image with width" =

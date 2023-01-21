@@ -69,11 +69,22 @@ let starts_list = function
   | _ -> false
 ;;
 
+let rec strip_whitespace_except_newlines = function
+  | [] -> []
+  | '\n' :: xs -> '\n' :: xs
+  | x :: xs when Char.is_whitespace x -> strip_whitespace_except_newlines xs
+  | xs -> xs
+;;
+
 (* Returns true of the characters at the start of the list end the current paragraph. This happens either when we reach the end of the document or there are two newlines in a row. *)
 let ends_paragraph = function
-  (* TODO: skip the whitespace between the first and second newline *)
-  | [] | '\n' :: '\n' :: _ -> true
+  | [] -> true
   | '\n' :: xs when starts_list xs -> true
+  | '\n' :: xs ->
+    (match strip_whitespace_except_newlines xs with
+     | [] -> true
+     | '\n' :: _ -> true
+     | _ -> false)
   | _ -> false
 ;;
 
@@ -87,14 +98,15 @@ let bind_parser (f_a : parse_method) (f_b : parse_method) xs =
   | None -> f_b xs
 ;;
 
-(* Calls bind parser on a list of parsers, with precedence being given to the first item in the list *)
+(* Calls bind parser on a list of parsers, with precedence being given to the
+   first item in the list. *)
 let rec bind_parsers = function
   (* If it's the last item in the list then just return it *)
   | [ x ] -> x
   (* Bind the next item in the list with the binding of all subsequent items *)
   | x :: xs -> bind_parser x (bind_parsers xs)
   (* The case below should only happen if initially invoked incorrectly *)
-  | _ -> raise_s (sexp_of_string "bind_parser cannot be called with an empty list")
+  | _ -> raise_s [%message "bind_parser cannot be called with an empty list"]
 ;;
 
 (* Returns true if a character is escapable, false otherwise *)
