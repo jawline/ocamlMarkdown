@@ -73,69 +73,61 @@ let rec to_html (markdown : Fragment.t) : string =
   | HorizontalRule -> sprintf "<hr/>\n"
 ;;
 
-let check output expected =
-  if String.( = ) output expected then true else raise_s [%message output expected]
+let test markdown = print_endline (Parse.parse markdown |> to_html)
+
+let%expect_test "basic_text" =
+  test "hello";
+  [%expect {| <p>hello</p> |}]
 ;;
 
-let%test "basic_text" =
-  let parse = Parse.parse in
-  let output = to_html (parse "hello") in
-  check output "<p>hello</p>\n"
+let%expect_test "basic_texts_split_over_two_lines" =
+  test "hello\nworld";
+  [%expect {| <p>hello world</p> |}]
 ;;
 
-let%test "basic_texts_split_over_two_lines" =
-  let parse = Parse.parse in
-  let output = to_html (parse "hello\nworld") in
-  check output "<p>hello world</p>\n"
+let%expect_test "bold_text" =
+  test "he**ll**o";
+  [%expect {| <p>he<b>ll</b>o</p> |}]
 ;;
 
-let%test "bold_text" =
-  let parse = Parse.parse in
-  let output = to_html (parse "he**ll**o") in
-  check output "<p>he<b>ll</b>o</p>\n"
+let%expect_test "italic_text" =
+  test "he*ll*o";
+  [%expect {| <p>he<i>ll</i>o</p> |}]
 ;;
 
-let%test "italic_text" =
-  let parse = Parse.parse in
-  let output = to_html (parse "he*ll*o") in
-  check output "<p>he<i>ll</i>o</p>\n"
+let%expect_test "heading" =
+  test "## Heading\n";
+  [%expect {| <h2>Heading</h2> |}]
 ;;
 
-let%test "heading" =
-  let parse = Parse.parse in
-  let output = to_html (parse "## Heading\n") in
-  check output "<h2>Heading</h2>\n"
+let%expect_test "link" =
+  test "[Hello](https://example.com)\n";
+  [%expect {| <p><a href="https://example.com">Hello</a></p> |}]
 ;;
 
-let%test "link" =
-  let parse = Parse.parse in
-  let output = to_html (parse "[Hello](https://example.com)\n") in
-  let expected = "<p><a href=\"https://example.com\">Hello</a></p>\n" in
-  check output expected
+let%expect_test "basic_blockquote" =
+  test ">Hello\n>World";
+  [%expect {|
+    <blockquote><p>Hello World</p>
+    </blockquote> |}]
 ;;
 
-let%test "basic_blockquote" =
-  let parse = Parse.parse in
-  let output = to_html (parse ">Hello\n>World") in
-  check output "<blockquote><p>Hello World</p>\n</blockquote>\n"
+let%expect_test "two_paragraphs" =
+  test "# Heading\nHello World\n\nGoodbye World";
+  [%expect {|
+    <h1>Heading</h1>
+    <p>Hello World</p>
+    <p>Goodbye World</p> |}]
 ;;
 
-let%test "two_paragraphs" =
-  let parse = Parse.parse in
-  let output = to_html (parse "# Heading\nHello World\n\nGoodbye World") in
-  check output "<h1>Heading</h1>\n<p>Hello World</p>\n<p>Goodbye World</p>\n"
+let%expect_test "image render" =
+  test "![desc](test.png)";
+  [%expect {| <p><img alt="desc" src="test.png" /></p> |}]
 ;;
 
-let%test "image render" =
-  let parse = Parse.parse in
-  let output = to_html (parse "![desc](test.png)") in
-  check output "<p><img alt=\"desc\" src=\"test.png\" /></p>\n"
-;;
-
-let%test "code_escape" =
-  let parse = Parse.parse in
-  let output = to_html (parse "``<Hello>``") in
-  check output "<p><code>&#0060;Hello&#0062;</code></p>\n"
+let%expect_test "code_escape" =
+  test "``<Hello>``";
+  [%expect {| <p><code>&#0060;Hello&#0062;</code></p> |}]
 ;;
 
 (* TODO: to_html tests are insufficient, missing important cases like Code*)
