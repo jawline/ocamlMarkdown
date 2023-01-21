@@ -68,89 +68,74 @@ let rec to_html (markdown : Fragment.t) : string =
     in
     sprintf "<img %salt=\"%s\" src=\"%s\" />" dimension_string description path
   | Heading { depth; text } -> sprintf "<h%i>%s</h%i>\n" depth text depth
-  | Link { description; path } -> sprintf "<a href=\"%s\">%s</a>" description path
+  | Link { description; path } -> sprintf "<a href=\"%s\">%s</a>" path description
   | Blockquote t -> sprintf "<blockquote>%s</blockquote>\n" (to_html t)
   | HorizontalRule -> sprintf "<hr/>\n"
 ;;
 
-exception ToHtmlTestingError of string
+let check output expected =
+  if String.( = ) output expected then true else raise_s [%message output expected]
+;;
 
 let%test "basic_text" =
   let parse = Parse.parse in
   let output = to_html (parse "hello") in
-  if String.( = ) output "<p>hello</p>\n" then true else raise (ToHtmlTestingError output)
+  check output "<p>hello</p>\n"
 ;;
 
 let%test "basic_texts_split_over_two_lines" =
   let parse = Parse.parse in
   let output = to_html (parse "hello\nworld") in
-  if String.( = ) output "<p>hello world</p>\n"
-  then true
-  else raise (ToHtmlTestingError output)
+  check output "<p>hello world</p>\n"
 ;;
 
 let%test "bold_text" =
   let parse = Parse.parse in
   let output = to_html (parse "he**ll**o") in
-  if String.( = ) output "<p>he<b>ll</b>o</p>\n"
-  then true
-  else raise (ToHtmlTestingError output)
+  check output "<p>he<b>ll</b>o</p>\n"
 ;;
 
 let%test "italic_text" =
   let parse = Parse.parse in
   let output = to_html (parse "he*ll*o") in
-  if String.( = ) output "<p>he<i>ll</i>o</p>\n"
-  then true
-  else raise (ToHtmlTestingError output)
+  check output "<p>he<i>ll</i>o</p>\n"
 ;;
 
 let%test "heading" =
   let parse = Parse.parse in
   let output = to_html (parse "## Heading\n") in
-  if String.( = ) output "<h2>Heading</h2>\n"
-  then true
-  else raise (ToHtmlTestingError output)
+  check output "<h2>Heading</h2>\n"
 ;;
 
 let%test "link" =
   let parse = Parse.parse in
   let output = to_html (parse "[Hello](https://example.com)\n") in
-  if String.( = ) output "<p><a href=\"https://example.com\">Hello</a></p>\n"
-  then true
-  else raise (ToHtmlTestingError output)
+  let expected = "<p><a href=\"https://example.com\">Hello</a></p>\n" in
+  check output expected
 ;;
 
 let%test "basic_blockquote" =
   let parse = Parse.parse in
   let output = to_html (parse ">Hello\n>World") in
-  if String.( = ) output "<blockquote><p>Hello World</p>\n</blockquote>\n"
-  then true
-  else raise (ToHtmlTestingError output)
+  check output "<blockquote><p>Hello World</p>\n</blockquote>\n"
 ;;
 
 let%test "two_paragraphs" =
   let parse = Parse.parse in
   let output = to_html (parse "# Heading\nHello World\n\nGoodbye World") in
-  if String.( = ) output "<h1>Heading</h1>\n<p>Hello World</p>\n<p>Goodbye World</p>\n"
-  then true
-  else raise (ToHtmlTestingError output)
+  check output "<h1>Heading</h1>\n<p>Hello World</p>\n<p>Goodbye World</p>\n"
 ;;
 
 let%test "image render" =
   let parse = Parse.parse in
   let output = to_html (parse "![desc](test.png)") in
-  if String.( = ) output "<p><img alt=\"desc\" src=\"test.png\" /></p>\n"
-  then true
-  else raise (ToHtmlTestingError output)
+  check output "<p><img alt=\"desc\" src=\"test.png\" /></p>\n"
 ;;
 
 let%test "code_escape" =
   let parse = Parse.parse in
   let output = to_html (parse "``<Hello>``") in
-  if String.( = ) output "<p><code>&#0060;Hello&#0062;</code></p>\n"
-  then true
-  else raise (ToHtmlTestingError output)
+  check output "<p><code>&#0060;Hello&#0062;</code></p>\n"
 ;;
 
 (* TODO: to_html tests are insufficient, missing important cases like Code*)
