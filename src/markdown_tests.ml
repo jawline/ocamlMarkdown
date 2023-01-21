@@ -82,11 +82,13 @@ let%test "basic_list" =
   | Fragments
       [ Paragraph [ Text "Test" ]
       ; List
-          ( Unordered
-          , [ Fragments [ Text "Hello" ]
-            ; Fragments [ Text "World" ]
-            ; Fragments [ Text "What" ]
-            ] )
+          { style = Unordered
+          ; items =
+              [ Fragments [ Text "Hello" ]
+              ; Fragments [ Text "World" ]
+              ; Fragments [ Text "What" ]
+              ]
+          }
       ] -> true
   | _ -> false
 ;;
@@ -96,12 +98,14 @@ let%test "basic_ordered_list" =
   match parsed_list with
   | Fragments
       [ List
-          ( Ordered
-          , [ Fragments [ Text "Hello world" ]
-            ; Fragments [ Text "What's up?" ]
-            ; Fragments [ Text "I don't know" ]
-            ; Fragments [ Text "This is still valid" ]
-            ] )
+          { style = Ordered
+          ; items =
+              [ Fragments [ Text "Hello world" ]
+              ; Fragments [ Text "What's up?" ]
+              ; Fragments [ Text "I don't know" ]
+              ; Fragments [ Text "This is still valid" ]
+              ]
+          }
       ] -> true
   | _ -> false
 ;;
@@ -117,21 +121,22 @@ let%test "header" =
 let%test "simple_code_and_text" =
   let parsed_code = parse "Goodbye ``Hello``" in
   match parsed_code with
-  | Fragments [ Paragraph [ Text "Goodbye "; Code (Inline, "Hello") ] ] -> true
+  | Fragments [ Paragraph [ Text "Goodbye "; Code { style = Inline; code = "Hello" } ] ]
+    -> true
   | _ -> false
 ;;
 
 let%test "simple_code" =
   let parsed_code = parse "``Hello``" in
   match parsed_code with
-  | Fragments [ Paragraph [ Code (Inline, "Hello") ] ] -> true
+  | Fragments [ Paragraph [ Code { style = Inline; code = "Hello" } ] ] -> true
   | _ -> false
 ;;
 
 let%test "block_of_code" =
   let parsed_code = parse "```Hello```" in
   match parsed_code with
-  | Fragments [ Paragraph [ Code (Block, "Hello") ] ] -> true
+  | Fragments [ Paragraph [ Code { style = Block; code = "Hello" } ] ] -> true
   | _ -> false
 ;;
 
@@ -254,8 +259,15 @@ let%test "multiline_blockquote" =
 let%test "simple_image" =
   let image_md = parse "![Description](image.png)" in
   match image_md with
-  | Fragments [ Paragraph [ Image (OriginalDimension, "Description", "image.png") ] ] ->
-    true
+  | Fragments
+      [ Paragraph
+          [ Image
+              { dimensions = Original_dimensions
+              ; description = "Description"
+              ; path = "image.png"
+              }
+          ]
+      ] -> true
   | _ -> false
 ;;
 
@@ -264,9 +276,17 @@ let%test "stacked_images" =
   match image_md with
   | Fragments
       [ Paragraph
-          [ Image (OriginalDimension, "Description", "image.png")
+          [ Image
+              { dimensions = Original_dimensions
+              ; description = "Description"
+              ; path = "image.png"
+              }
           ; Text " "
-          ; Image (OriginalDimension, "Other", "other.png")
+          ; Image
+              { dimensions = Original_dimensions
+              ; description = "Other"
+              ; path = "other.png"
+              }
           ; Text " "
           ]
       ] -> true
@@ -276,7 +296,15 @@ let%test "stacked_images" =
 let%test "image with width" =
   let image_md = parse "![Description](image.png =500x)" in
   match image_md with
-  | Fragments [ Paragraph [ Image (Width "500", "Description", "image.png") ] ] -> true
+  | Fragments
+      [ Paragraph
+          [ Image
+              { dimensions = Width "500"
+              ; description = "Description"
+              ; path = "image.png"
+              }
+          ]
+      ] -> true
   | _ -> false
 ;;
 
@@ -284,8 +312,14 @@ let%test "image with width and height" =
   let image_md = parse "![Description](image.png =500x400)" in
   match image_md with
   | Fragments
-      [ Paragraph [ Image (WidthHeight ("500", "400"), "Description", "image.png") ] ] ->
-    true
+      [ Paragraph
+          [ Image
+              { dimensions = Width_and_height ("500", "400")
+              ; description = "Description"
+              ; path = "image.png"
+              }
+          ]
+      ] -> true
   | _ -> false
 ;;
 

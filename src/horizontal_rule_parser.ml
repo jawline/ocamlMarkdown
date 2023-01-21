@@ -15,8 +15,8 @@ let rec check_hr hr_list xs =
   | [] -> None
   | f :: hr_list ->
     (match f 0 xs with
-    | Some xs -> Some (Fragment.HorizontalRule, xs)
-    | None -> check_hr hr_list xs)
+     | Some xs -> Some (Fragment.HorizontalRule, xs)
+     | None -> check_hr hr_list xs)
 ;;
 
 let parse =

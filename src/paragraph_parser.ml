@@ -4,7 +4,9 @@ open Fragment
 
 (* TODO: Escaping *)
 
-(* This method generates predicates for the special text sections like ** for bold and _ for italics. It will generate a method that returns true if the same character is repeated count times *)
+(* This method generates predicates for the special text sections like ** for
+   bold and _ for italics. It will generate a method that returns true if the
+   same character is repeated count times *)
 let repeated_character (expected : char) (count : int) =
   let rec verify xs i =
     if i = count
@@ -21,7 +23,8 @@ let repeated_character (expected : char) (count : int) =
 let bold_predicate = repeated_character '*' 2
 let bold_predicate_underscore = repeated_character '-' 2
 
-(* Italics are started and ended by a *. Italics should be checked only after bold since the _great_ language of markdown overloads the symbol *)
+(* Italics are started and ended by a *. Italics should be checked only after
+   bold since the _great_ language of markdown overloads the symbol *)
 let italic_predicate = repeated_character '*' 1
 let italic_predicate_underscore = repeated_character '_' 1
 
@@ -30,7 +33,9 @@ let code_predicate = repeated_character '`' 1
 let code_predicate_double = repeated_character '`' 2
 let code_predicate_triple = repeated_character '`' 3
 
-(* If we are at a paragraph ending sequence or any of the bold / italic / code predicates are satisfied then the text parsing is terminated and the next fragment (potentially code, bold, new paragraph) is parsed *)
+(* If we are at a paragraph ending sequence or any of the bold / italic / code
+   predicates are satisfied then the text parsing is terminated and the next
+   fragment (potentially code, bold, new paragraph) is parsed. *)
 let terminates_text xs =
   ends_paragraph xs
   || is_some (bold_predicate xs)
@@ -39,12 +44,14 @@ let terminates_text xs =
   || is_some (Link_parser.starts_link xs)
 ;;
 
-(* this reads characters from the stream until a sequence that terminates a contiguous text block is reached *)
+(* This reads characters from the stream until a sequence that terminates a
+   contiguous text block is reached *)
 let parse_text xs =
   let parse_text_inner = parse_characters_until terminates_text in
-  (*
-    We force forward progress in the parser by always taking at least one character if we fall through to parse_text
-    Otherwise we might get stuck trying to parse an unclosed bold, italic, code block etc *)
+  (* We force forward progress in the parser by always taking at least one
+     character if we fall through to parse_text
+     Otherwise we might get stuck trying to parse an unclosed bold, italic, code
+     block etc *)
   match take_character xs with
   | None -> None
   | Some (x, xs) ->
@@ -53,18 +60,21 @@ let parse_text xs =
 ;;
 
 (* this reads out a series of characters between ` `` and ``` opening blocks as code segments *)
-let parse_code_core code_type predicate xs =
+let parse_code_core style predicate xs =
   let parse_code_inner = parse_characters_until (fun xs -> is_some (predicate xs)) in
   match predicate xs with
   | Some xs ->
     let code, rest = parse_code_inner xs in
     (match predicate rest with
-    | Some after_code -> Some (Code (code_type, String.of_char_list code), after_code)
-    | None -> None)
+     | Some after_code ->
+       Some (Code { style; code = String.of_char_list code }, after_code)
+     | None -> None)
   | None -> None
 ;;
 
-(* Generate a parsing method for each of the three code start predicates. They are added in reverse order so the longer options take precedence, otherwise ```Hello``` would evaluate to `` `Hello` ``*)
+(* Generate a parsing method for each of the three code start predicates. They
+   are added in reverse order so the longer options take precedence, otherwise
+   ```Hello``` would evaluate to `` `Hello` ``*)
 let code_parser =
   parse_code_core Inline code_predicate
   |> bind_parser (parse_code_core Inline code_predicate_double)
@@ -86,26 +96,26 @@ let rec parse_paragraph_contents ends_predicate fragment_parser xs =
   | None -> [], xs
 ;;
 
-(*
-    This method generates parsing methods for bold and italics using a predicate to decide if we have hit the end.
-    start_predicate and end_predicate are functions that take a string and return Some with the remaining string after the terminating characters if satisfied, or None if they are not satisfied.
-    wrap is a function that takes
-    *)
+(* This method generates parsing methods for bold and italics using a predicate
+   to decide if we have hit the end.
+   start_predicate and end_predicate are functions that take a string and return
+   Some with the remaining string after the terminating characters if satisfied,
+   or None if they are not satisfied.  wrap is a function that takes. *)
 let paragraph_format_parser
-    (start_predicate : char list -> char list option)
-    (end_predicate : char list -> char list option)
-    parse_method
-    (wrap : Fragment.t list -> Fragment.t)
+  (start_predicate : char list -> char list option)
+  (end_predicate : char list -> char list option)
+  parse_method
+  (wrap : Fragment.t list -> Fragment.t)
   = function
   | xs ->
     (match start_predicate xs with
-    | Some beginning_of_content ->
-      (* Check if we can parse the content, if that does not fail then wrap it in Fragment.t using the wrap predicate *)
-      let content, rest = parse_method beginning_of_content in
-      (match end_predicate rest with
-      | Some rest -> Some (wrap content, rest)
-      | None -> None)
-    | None -> None)
+     | Some beginning_of_content ->
+       (* Check if we can parse the content, if that does not fail then wrap it in Fragment.t using the wrap predicate *)
+       let content, rest = parse_method beginning_of_content in
+       (match end_predicate rest with
+        | Some rest -> Some (wrap content, rest)
+        | None -> None)
+     | None -> None)
 ;;
 
 (* parse_formatted_section forms the foundation of the special text parsers (Like Bold, Italic) where the paragraph parser needs to recurse on itself but with an additional terminating predicate (I.e, now terminate at __ rather than just \n\n). We split this logic out into a series of functions with their recursors or continuations as methods to reduce repeated code.
@@ -117,7 +127,7 @@ let parse_formatted_section predicate recurser wrap =
   let parse_formatted_inner xs =
     parse_paragraph_contents
       (function
-        | test_input -> is_some (predicate test_input) || ends_paragraph test_input)
+       | test_input -> is_some (predicate test_input) || ends_paragraph test_input)
       recurser
       xs
   in

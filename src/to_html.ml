@@ -26,7 +26,7 @@ let html_encode_string s =
 ;;
 
 let list_order_as_html = function
-  | Unordered -> "ul"
+  | Fragment.List_style.Unordered -> "ul"
   | Ordered -> "ol"
 ;;
 
@@ -49,23 +49,24 @@ let rec to_html (markdown : Fragment.t) : string =
   | Fragments parts -> to_html_list_of_fragments parts
   | Paragraph parts ->
     sprintf "<p>%s</p>\n" (String.strip (to_html_list_of_fragments parts))
-  | Code (code_type, code_str) ->
-    (match code_type with
-    | Inline -> sprintf "<code>%s</code>" (html_encode_string (String.strip code_str))
-    | Block ->
-      sprintf "<pre><code>%s</code></pre>" (html_encode_string (String.strip code_str)))
+  | Code { style; code } ->
+    (match style with
+     | Inline -> sprintf "<code>%s</code>" (html_encode_string (String.strip code))
+     | Block ->
+       sprintf "<pre><code>%s</code></pre>" (html_encode_string (String.strip code)))
   | Text text -> text
-  | List (list_type, list_items) -> to_html_list list_type list_items
+  | List { style; items } -> to_html_list style items
   | Bold t -> sprintf "<b>%s</b>" (to_html t)
   | Italic t -> sprintf "<i>%s</i>" (to_html t)
-  | Image (dimension, alt_text, url) ->
+  | Image { dimensions; description; path } ->
     let dimension_string =
-      match dimension with
-      | OriginalDimension -> ""
+      match dimensions with
+      | Original_dimensions -> ""
       | Width width -> sprintf "width=\"%s\" " width
-      | WidthHeight (width, height) -> sprintf "width=\"%s\" height=\"%s\" " width height
+      | Width_and_height (width, height) ->
+        sprintf "width=\"%s\" height=\"%s\" " width height
     in
-    sprintf "<img %salt=\"%s\" src=\"%s\" />" dimension_string alt_text url
+    sprintf "<img %salt=\"%s\" src=\"%s\" />" dimension_string description path
   | Heading (depth, title) -> sprintf "<h%i>%s</h%i>\n" depth title depth
   | Link (title, url) -> sprintf "<a href=\"%s\">%s</a>" url title
   | Blockquote t -> sprintf "<blockquote>%s</blockquote>\n" (to_html t)

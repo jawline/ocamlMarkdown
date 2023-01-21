@@ -21,8 +21,8 @@ let fetch_between start_predicate end_predicate xs =
   | Some xs ->
     let inner, xs = inside_reader xs in
     (match end_predicate xs with
-    | Some xs -> Some (inner, xs)
-    | None -> None)
+     | Some xs -> Some (inner, xs)
+     | None -> None)
   | None -> None
 ;;
 
@@ -33,31 +33,32 @@ let parse_link xs =
   match fetch_link_title xs with
   | Some (title_contents, xs) ->
     (match fetch_link_url xs with
-    | Some (url_contents, xs) ->
-      Some
-        ( Fragment.Link
-            (String.of_char_list title_contents, String.of_char_list url_contents)
-        , xs )
-    | None -> None)
+     | Some (url_contents, xs) ->
+       Some
+         ( Fragment.Link
+             (String.of_char_list title_contents, String.of_char_list url_contents)
+         , xs )
+     | None -> None)
   | None -> None
 ;;
 
-let convert_to_image alt_text url_section =
+let convert_to_image description url_section =
   match String.split_on_chars url_section ~on:[ ' ' ] with
-  | url_section :: width_part :: _ ->
-    let dim =
+  | path :: width_part :: _ ->
+    let dimensions =
       if String.is_prefix width_part ~prefix:"="
       then (
         match String.split_on_chars ~on:[ 'x' ] (String.drop_prefix width_part 1) with
         | [ width; height ] ->
           if String.length height = 0
-          then Fragment.Width width
-          else Fragment.WidthHeight (width, height)
-        | _ -> Fragment.OriginalDimension)
-      else Fragment.OriginalDimension
+          then Fragment.Image_dimensions.Width width
+          else Width_and_height (width, height)
+        | _ -> Original_dimensions)
+      else Original_dimensions
     in
-    Fragment.Image (dim, alt_text, url_section)
-  | _ -> Fragment.Image (OriginalDimension, alt_text, url_section)
+    Fragment.Image { dimensions; description; path }
+  | _ ->
+    Fragment.Image { dimensions = Original_dimensions; description; path = url_section }
 ;;
 
 (* Images have almost identical schema to links so we hijack the link parser and convert it to an image fragment instead *)
@@ -65,8 +66,8 @@ let parse_image xs =
   match xs with
   | '!' :: xs ->
     (match parse_link xs with
-    | Some (Fragment.Link (alt_text, url), xs) -> Some (convert_to_image alt_text url, xs)
-    | _ -> None)
+     | Some (Fragment.Link (alt_text, url), xs) -> Some (convert_to_image alt_text url, xs)
+     | _ -> None)
   | _ -> None
 ;;
 
