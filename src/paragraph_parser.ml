@@ -55,7 +55,6 @@ let parse_text xs =
   match take_character xs with
   | None -> None
   | Some (x, xs) ->
-    Core.print_s [%message (x : char) (xs : char list)];
     let parsed_text, follows = parse_text_inner xs in
     Some (Text (String.of_char_list (sanitize_paragraph (x :: parsed_text))), follows)
 ;;

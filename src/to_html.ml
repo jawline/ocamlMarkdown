@@ -78,14 +78,12 @@ let test markdown = print_endline (Parse.parse markdown |> to_html)
 let%expect_test "basic_text" =
   test "hello";
   [%expect {|
-    ((x h) (xs (e l l o)))
     <p>hello</p> |}]
 ;;
 
 let%expect_test "basic_texts_split_over_two_lines" =
   test "hello\nworld";
   [%expect {|
-    ((x h) (xs (e l l o "\n" w o r l d)))
     <p>hello world</p> |}]
 ;;
 
@@ -93,9 +91,6 @@ let%expect_test "bold_text" =
   test "he**ll**o";
   [%expect
     {|
-    ((x h) (xs (e * * l l * * o)))
-    ((x l) (xs (l * * o)))
-    ((x o) (xs ()))
     <p>he<b>ll</b>o</p> |}]
 ;;
 
@@ -103,9 +98,6 @@ let%expect_test "italic_text" =
   test "he*ll*o";
   [%expect
     {|
-    ((x h) (xs (e * l l * o)))
-    ((x l) (xs (l * o)))
-    ((x o) (xs ()))
     <p>he<i>ll</i>o</p> |}]
 ;;
 
@@ -125,7 +117,6 @@ let%expect_test "basic_blockquote" =
   test ">Hello\n>World";
   [%expect
     {|
-    ((x H) (xs (e l l o "\n" W o r l d "\n")))
     <blockquote><p>Hello World</p>
     </blockquote> |}]
 ;;
@@ -137,19 +128,6 @@ let%expect_test "multiple paragraphs" =
     \  This is the third paragraph.";
   [%expect
     {|
-    ((x T)
-     (xs
-      (h i s " " i s " " t h e " " f i r s t " " p a r a g r a p h . " " T h e r
-       e " " a r e " " m u l t i p l e " " s e n t e n c e s . "\n" "\n" " " " "
-       T h i s " " i s " " t h e " " s e c o n d " " p a r a g r a p h . " " I t
-       " " i s " " s p l i t " " b y " " a " " n e w l i n e . "\n" "\n" " " " "
-       T h i s " " i s " " t h e " " t h i r d " " p a r a g r a p h .)))
-    ((x T)
-     (xs
-      (h i s " " i s " " t h e " " s e c o n d " " p a r a g r a p h . " " I t
-       " " i s " " s p l i t " " b y " " a " " n e w l i n e . "\n" "\n" " " " "
-       T h i s " " i s " " t h e " " t h i r d " " p a r a g r a p h .)))
-    ((x T) (xs (h i s " " i s " " t h e " " t h i r d " " p a r a g r a p h .)))
     <p>This is the first paragraph. There are multiple sentences.</p>
     <p>This is the second paragraph. It is split by a newline.</p>
     <p>This is the third paragraph.</p> |}]
@@ -177,20 +155,6 @@ let%expect_test "multi-line code" =
     \  This is a new section.";
   [%expect
     {|
-    ((x T)
-     (xs
-      (h i s " " i s " " n o t " " c o d e . "\n" " " " " ` ` ` "\n" l e t " " t
-       h i s _ i s _ c o d e " " = " " t r u e " " i n "\n" p r i n t _ e n d l i
-       n e " " "(" B o o l . t o _ s t r i n g " " t h i s _ i s _ c o d e ")"
-       "\n" " " " " ` ` ` "\n" " " " " T h i s " " i s " " n o t " " c o d e " "
-       b u t " " i s " " i n " " t h e " " s a m e " " s e c t i o n . "\n" " "
-       "\n" " " " " T h i s " " i s " " a " " n e w " " s e c t i o n .)))
-    ((x "\n")
-     (xs
-      (" " " " T h i s " " i s " " n o t " " c o d e " " b u t " " i s " " i n
-       " " t h e " " s a m e " " s e c t i o n . "\n" " " "\n" " " " " T h i s
-       " " i s " " a " " n e w " " s e c t i o n .)))
-    ((x T) (xs (h i s " " i s " " a " " n e w " " s e c t i o n .)))
     <p>This is not code. <pre><code>let this&#0095;is&#0095;code &#0061; true in
     print&#0095;endline &#0040;Bool&#0046;to&#0095;string this&#0095;is&#0095;code&#0041;</code></pre> This is not code but is in the same section.</p>
     <p>This is a new section.</p> |}]
