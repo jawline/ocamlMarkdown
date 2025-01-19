@@ -5,8 +5,6 @@ authors: ["Blake Loring"]
 depends: [
   "dune" {>= "2.0"}
   "core"
-  "ocamlyacc"
-  "ocamllex"
 ]
 build: [
   ["dune" "subst"] {pinned}

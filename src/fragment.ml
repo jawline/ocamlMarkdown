@@ -38,7 +38,7 @@ type t =
   | Italic of t
   | Heading of
       { depth : int
-      ; text : string
+      ; contents : t list
       }
   | Link of
       { description : string

@@ -32,7 +32,9 @@ let test_fn markdown fragment =
   let markdown_fragment = parse markdown in
   if Fragment.equal markdown_fragment fragment
   then true
-  else (print_s [%message "" ~_:(markdown_fragment : Fragment.t)]; false)
+  else (
+    print_s [%message "" ~_:(markdown_fragment : Fragment.t)];
+    false)
 ;;
 
 let%test "test_paragraph" =
@@ -113,7 +115,7 @@ let%test "header" =
   let parsed_header = parse test_with_header in
   match parsed_header with
   | Fragments
-      [ Heading { depth = 1; text = "Hello World" }
+      [ Heading { depth = 1; contents = [ Paragraph [ Text "Hello World" ] ] }
       ; Paragraph [ Text "This is a paragraph" ]
       ] -> true
   | _ -> false
@@ -145,7 +147,7 @@ let%test "deeper_header" =
   let parsed_header = parse test_with_deeper_header in
   match parsed_header with
   | Fragments
-      [ Heading { depth = 3; text = "Hello World" }
+      [ Heading { depth = 3; contents = [ Paragraph [ Text "Hello World" ] ] }
       ; Paragraph [ Text "This is a paragraph" ]
       ] -> true
   | _ -> false
@@ -155,7 +157,7 @@ let%test "mutliline_header" =
   let header = parse test_multiline_header in
   match header with
   | Fragments
-      [ Heading { depth = 1; text = "Hello World" }; Paragraph [ Text "What's up?" ] ] ->
+      [ Heading { depth = 1; contents = [ Paragraph [ Text "Hello World" ] ] }; Paragraph [ Text "What's up?" ] ] ->
     true
   | _ -> false
 ;;
@@ -164,7 +166,7 @@ let%test "deeper_mutliline_header" =
   let header = parse test_deeper_multiline_header in
   match header with
   | Fragments
-      [ Heading { depth = 2; text = "Hello World" }; Paragraph [ Text "What's up?" ] ] ->
+      [ Heading { depth = 2; contents = [ Paragraph [ Text "Hello World" ] ] }; Paragraph [ Text "What's up?" ] ] ->
     true
   | _ -> false
 ;;
@@ -245,8 +247,9 @@ let%test "link" =
 ;;
 
 let%test "blockquote" =
-  test_fn "> Hello World" 
-  (Fragments [ Blockquote (Fragments [ Paragraph [ Text "Hello World" ] ]) ]) 
+  test_fn
+    "> Hello World"
+    (Fragments [ Blockquote (Fragments [ Paragraph [ Text "Hello World" ] ]) ])
 ;;
 
 let%test "multiline_blockquote" =
@@ -257,14 +260,16 @@ let%test "multiline_blockquote" =
      >\n\
      > This is another paragraph in it"
   in
-  test_fn multiline_block_quotes ( Fragments
-      [ Blockquote
-          (Fragments
-            [ Heading { depth = 1; text = "Hello World" }
-            ; Paragraph [ Text "This is still the block quotes" ]
-            ; Paragraph [ Text "This is another paragraph in it" ]
-            ])
-      ])
+  test_fn
+    multiline_block_quotes
+    (Fragments
+       [ Blockquote
+           (Fragments
+              [ Heading { depth = 1; contents = [ Paragraph [ Text "Hello World" ] ] }
+              ; Paragraph [ Text "This is still the block quotes" ]
+              ; Paragraph [ Text "This is another paragraph in it" ]
+              ])
+       ])
 ;;
 
 let%test "simple_image" =
@@ -283,22 +288,23 @@ let%test "simple_image" =
 ;;
 
 let%test "stacked_images" =
-  test_fn "![Description](image.png)\n![Other](other.png)\n" 
-   (Fragments
-      [ Paragraph
-          [ Image
-              { dimensions = Original_dimensions
-              ; description = "Description"
-              ; path = "image.png"
-              }
-          ; Text " "
-          ; Image
-              { dimensions = Original_dimensions
-              ; description = "Other"
-              ; path = "other.png"
-              }
-          ]
-      ])
+  test_fn
+    "![Description](image.png)\n![Other](other.png)\n"
+    (Fragments
+       [ Paragraph
+           [ Image
+               { dimensions = Original_dimensions
+               ; description = "Description"
+               ; path = "image.png"
+               }
+           ; Text " "
+           ; Image
+               { dimensions = Original_dimensions
+               ; description = "Other"
+               ; path = "other.png"
+               }
+           ]
+       ])
 ;;
 
 let%test "image with width" =

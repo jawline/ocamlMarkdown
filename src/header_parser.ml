@@ -18,12 +18,23 @@ let rec parse_header_title_text xs =
     x :: rest, follows
 ;;
 
+let parse_until_nothing_remains xs =
+  let rec loop xs =
+    match xs with
+    | [] -> []
+    | x ->
+      let result, follows = Paragraph_parser.parse x |> Option.value_exn in
+      result :: loop follows
+  in
+  loop xs
+;;
+
 let parse_header_starting_with_hash xs =
   match xs with
   | '#' :: _ ->
     let depth, rest = parse_header_count_depth xs in
     let text_list, follows = parse_header_title_text (skip rest) in
-    Some (Heading { depth; text = String.of_char_list text_list }, follows)
+    Some (Heading { depth; contents = parse_until_nothing_remains text_list }, follows)
   | _ -> None
 ;;
 
@@ -48,7 +59,7 @@ let parse_header_two_lines chr depth xs =
   let first_line, xs = read_entire_line xs in
   match is_header_line 0 chr xs with
   | Some (count, follows) when count > 1 ->
-    Some (Heading { depth; text = String.of_char_list first_line }, follows)
+    Some (Heading { depth; contents = parse_until_nothing_remains first_line }, follows)
   | _ -> None
 ;;
 

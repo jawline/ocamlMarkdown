@@ -127,7 +127,7 @@ let parse_formatted_section predicate recurser wrap =
   let parse_formatted_inner xs =
     parse_paragraph_contents
       (function
-       | test_input -> is_some (predicate test_input) || ends_paragraph test_input)
+        | test_input -> is_some (predicate test_input) || ends_paragraph test_input)
       recurser
       xs
   in
@@ -136,7 +136,7 @@ let parse_formatted_section predicate recurser wrap =
 
 let rec parse_paragraph_fragment xs =
   (* There are two situations where we parse text as Bold, '__' or '**', in this case we recurse (since bold text can be additionally formatted) using our parse_formatted_section generator
-      We generate an individual bold parsing function for __ and ** and then bind them together *)
+     We generate an individual bold parsing function for __ and ** and then bind them together *)
   let bold_wrap = function
     | xs -> Bold (Fragments xs)
   in

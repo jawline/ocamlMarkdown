@@ -67,7 +67,7 @@ let rec to_html (markdown : Fragment.t) : string =
         sprintf "width=\"%s\" height=\"%s\" " width height
     in
     sprintf "<img %salt=\"%s\" src=\"%s\" />" dimension_string description path
-  | Heading { depth; text } -> sprintf "<h%i>%s</h%i>\n" depth text depth
+  | Heading { depth; contents } -> sprintf "<h%i>%s</h%i>\n" depth (to_html_list_of_fragments contents) depth
   | Link { description; path } -> sprintf "<a href=\"%s\">%s</a>" path description
   | Blockquote t -> sprintf "<blockquote>%s</blockquote>\n" (to_html t)
   | HorizontalRule -> sprintf "<hr/>\n"
@@ -89,34 +89,33 @@ let%expect_test "basic_texts_split_over_two_lines" =
 
 let%expect_test "bold_text" =
   test "he**ll**o";
-  [%expect
-    {|
+  [%expect {|
     <p>he<b>ll</b>o</p> |}]
 ;;
 
 let%expect_test "italic_text" =
   test "he*ll*o";
-  [%expect
-    {|
+  [%expect {|
     <p>he<i>ll</i>o</p> |}]
 ;;
 
 let%expect_test "heading" =
   test "## Heading\n";
-  [%expect {| <h2>Heading</h2> |}]
+  [%expect {|
+    <h2><p>Heading</p>
+    </h2>
+    |}]
 ;;
 
 let%expect_test "link" =
   test "[Hello](https://example.com)\n";
-  [%expect
-    {|
+  [%expect {|
     <p><a href="https://example.com">Hello</a></p> |}]
 ;;
 
 let%expect_test "basic_blockquote" =
   test ">Hello\n>World";
-  [%expect
-    {|
+  [%expect {|
     <blockquote><p>Hello World</p>
     </blockquote> |}]
 ;;
